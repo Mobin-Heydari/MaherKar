@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from .managers import UserManager
 
 
 
@@ -85,11 +86,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name="مدیر",
     )
 
-    # فیلد اصلی ورود: ایمیل به عنوان شناسه اصلی برای ورود به سیستم استفاده می‌شود
-    USERNAME_FIELD = "email"
+    # فیلد اصلی ورود: شماره تماس به عنوان شناسه اصلی برای ورود به سیستم استفاده می‌شود
+    USERNAME_FIELD = "phone"
 
-    # فیلدهای ضروری برای ساخت کاربر جدید: علاوه بر ایمیل
-    REQUIRED_FIELDS = ["username"]
+    # فیلدهای ضروری برای ساخت کاربر جدید: علاوه بر شماره تماش
+    REQUIRED_FIELDS = ["username", "email"]
+
+    # مدیریت کاربران
+    objects = UserManager()
+
 
     class Meta:
         # ترتیب نمایش کاربران بر اساس تاریخ عضویت
