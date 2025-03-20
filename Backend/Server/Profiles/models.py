@@ -448,3 +448,75 @@ class EmployerProfile(models.Model):
 
     def __str__(self):
         return f"{self.company_name} - {self.user.username}"
+
+
+
+
+class AdminProfile(models.Model):
+    """
+    پروفایل مدیر سیستم.
+    مدیران معمولاً نیازی به اطلاعات حرفه‌ای پیچیده ندارند؛ اما ممکن است فیلدهایی مانند یادداشت‌های مدیریتی و سطح دسترسی داشته باشند.
+    """
+
+    # ارتباط یک به یک با مدل کاربر پایه؛ کاربر مربوط به مدیر باید از نوع "Admin" باشد.
+    user = models.OneToOneField(
+        "Users.User",
+        on_delete=models.CASCADE,
+        verbose_name="کاربر"
+    )
+    
+    
+    # تاریخ ایجاد پروفایل: ذخیره به صورت خودکار هنگام ایجاد
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد"
+    )
+    
+    # تاریخ به‌روزرسانی پروفایل: به صورت خودکار هنگام به‌روزرسانی تنظیم می‌شود
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="تاریخ به‌روزرسانی"
+    )
+
+    class Meta:
+        verbose_name = "پروفایل مدیر"
+        verbose_name_plural = "پروفایل‌های مدیران"
+
+    def __str__(self):
+        return f"{self.user.username} - Admin"
+
+
+
+class SupportProfile(models.Model):
+    """
+    پروفایل پشتیبان سیستم.
+    این مدل اطلاعات تخصص و ساعات کاری پشتیبان را ذخیره می‌کند.
+    پشتیبان می‌تواند شامل حوزه تخصص، ساعات کاری و امتیازات ارزیابی شده باشد.
+    """
+
+    # ارتباط یک به یک با مدل کاربر؛ کاربر مربوط به پشتیبان باید از نوع "Support" باشد.
+    user = models.OneToOneField(
+        "Users.User",
+        on_delete=models.CASCADE,
+        verbose_name="کاربر"
+    )
+    
+    
+    # تاریخ ایجاد پروفایل: ثبت خودکار هنگام ایجاد
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد"
+    )
+    
+    # تاریخ به‌روزرسانی پروفایل: ثبت خودکار هنگام به‌روزرسانی
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="تاریخ به‌روزرسانی"
+    )
+
+    class Meta:
+        verbose_name = "پروفایل پشتیبان"
+        verbose_name_plural = "پروفایل‌های پشتیبان"
+
+    def __str__(self):
+        return f"{self.user.username} - Support"
