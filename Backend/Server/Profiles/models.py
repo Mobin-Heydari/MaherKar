@@ -337,3 +337,114 @@ class Skill(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+
+class EmployerProfile(models.Model):
+    """
+    پروفایل کارفرما به سبک لینکدین.
+    شامل اطلاعات شرکت و اطلاعات تماس مربوط به کارفرمایان است.
+    """
+
+    # ارتباط یک به یک با مدل کاربر پایه (کاربر باید از نوع کارفرما باشد)
+    user = models.OneToOneField(
+        "Users.User",
+        on_delete=models.CASCADE,
+        verbose_name="کاربر"
+    )
+    
+    # نام شرکت: فیلد الزامی برای ذخیره نام شرکت
+    company_name = models.CharField(
+        max_length=255,
+        verbose_name="نام شرکت",
+        help_text="نام کامل شرکت (الزامی)"
+    )
+    
+    # لوگوی شرکت: آپلود تصویر لوگو (اختیاری)
+    company_logo = models.ImageField(
+        upload_to='employers/logos/',
+        null=True,
+        blank=True,
+        verbose_name="لوگوی شرکت",
+        help_text="لوگوی شرکت (اختیاری)"
+    )
+    
+    # وبسایت شرکت: آدرس اینترنتی شرکت (اختیاری)
+    website = models.URLField(
+        blank=True,
+        verbose_name="وبسایت شرکت",
+        help_text="آدرس وبسایت شرکت (اختیاری)"
+    )
+    
+    # صنعت: حوزه فعالیت شرکت (اختیاری)
+    industry = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="صنعت",
+        help_text="حوزه فعالیت شرکت (اختیاری)"
+    )
+    
+    # اندازه شرکت: اطلاعاتی مانند کوچک، متوسط یا بزرگ (اختیاری)
+    company_size = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="اندازه شرکت",
+        help_text="اندازه شرکت (مثلاً کوچک، متوسط، بزرگ) (اختیاری)"
+    )
+    
+    # توضیحات شرکت: شرح مختصر درباره شرکت و خدمات آن (اختیاری)
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیحات شرکت",
+        help_text="شرح مختصری از شرکت و خدمات آن (اختیاری)"
+    )
+    
+    # مکان شرکت: شهر یا منطقه محل شرکت (الزامی)
+    location = models.CharField(
+        max_length=255,
+        verbose_name="مکان شرکت",
+        help_text="شهر یا منطقه محل شرکت (الزامی)"
+    )
+    
+    # ایمیل تماس شرکت: جهت ارتباط (اختیاری)
+    contact_email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل تماس شرکت",
+        help_text="ایمیل جهت تماس با شرکت (اختیاری)"
+    )
+    
+    # شماره تماس شرکت: جهت ارتباط مستقیم (اختیاری)
+    contact_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="شماره تماس شرکت",
+        help_text="شماره تماس جهت ارتباط با شرکت (اختیاری)"
+    )
+    
+    # تاریخ تأسیس شرکت: تاریخی که شرکت تأسیس شده است (اختیاری)
+    established_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="تاریخ تأسیس",
+        help_text="تاریخ تأسیس شرکت (اختیاری)"
+    )
+    
+    # تاریخ ایجاد پروفایل: به صورت خودکار هنگام ایجاد ثبت می‌شود
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="تاریخ ایجاد"
+    )
+    
+    # تاریخ به‌روزرسانی پروفایل: به صورت خودکار هنگام آپدیت پروفایل تنظیم می‌شود
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="تاریخ به‌روزرسانی"
+    )
+
+    class Meta:
+        verbose_name = "پروفایل کارفرما"
+        verbose_name_plural = "پروفایل‌های کارفرمایان"
+
+    def __str__(self):
+        return f"{self.company_name} - {self.user.username}"
