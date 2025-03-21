@@ -9,7 +9,7 @@ class UserManager(BaseUserManager):
     """
 
     # متد ایجاد یک کاربر عادی
-    def create_user(self, phone, username, email, user_type, password=None): 
+    def create_user(self, phone, username, email, user_type, full_name, password=None): 
         """
         کاربری با مشخصات داده‌شده ایجاد و بازمی‌گرداند.
         """
@@ -35,6 +35,7 @@ class UserManager(BaseUserManager):
             username=username,  # نام کاربری
             email=email,  # ایمیل
             user_type=user_type,  # نوع کاربر (نقش)
+            full_name=full_name # نام و نام خانوادگی
         )
         
         # تنظیم رمز عبور
@@ -44,7 +45,7 @@ class UserManager(BaseUserManager):
         return user 
 
     # متد ایجاد ادمین
-    def create_superuser(self, phone, username, email, password=None):
+    def create_superuser(self, phone, username, email, full_name, password=None):
         """
         ادمین با مشخصات داده‌شده ایجاد و بازمی‌گرداند.
         """
@@ -56,6 +57,7 @@ class UserManager(BaseUserManager):
             username=username,  # نام کاربری
             user_type="AD",  # ادمین ها همیشه باید نقش مدیر داشته باشند
             password=password,  # رمز عبور
+            full_name=full_name # نام و نام خانوادگی
         )
         
         # تنظیم دسترسی‌های مدیریت و ادمین
