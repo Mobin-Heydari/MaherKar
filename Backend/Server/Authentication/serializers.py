@@ -1,9 +1,13 @@
+from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from rest_framework import validators
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from Users.models import User
+from .models import OneTimePassword
+
+from random import randint
 
 
 
@@ -57,3 +61,52 @@ class LoginSerializer(serializers.Serializer):
         
         # بازگشت داده‌های اعتبارسنجی شده
         return data
+
+
+
+
+# سریالایزر برای مدیریت رمز یکبار مصرف
+class OneTimePasswordSerializer(serializers.Serializer):
+    
+    # فیلد شماره تلفن با ولیداتور برای اطمینان از عدم استفاده تکراری شماره تلفن
+    phone = serializers.CharField(
+        max_length=15,
+        validators=[
+            validators.UniqueValidator(queryset=User.objects.all())  # بررسی منحصر به فرد بودن شماره تلفن در بین کاربران
+        ]
+    )
+    
+    # متدی برای ایجاد رکورد جدید رمز یکبار مصرف
+    def create(self, validated_data):
+        """
+        ایجاد رمز یکبار مصرف جدید با داده‌های اعتبارسنجی شده.
+        
+        :param validated_data: داده‌های تاییدشده
+        :return: یک دیکشنری شامل توکن و کد رمز یکبار مصرف
+        """
+        
+        # تولید کد تصادفی ۶ رقمی برای رمز یکبار مصرف
+        code = randint(100000, 999999)  # تولید کد ۶ رقمی
+        # تولید توکن تصادفی طولانی
+        token = get_random_string(100)  # تولید توکن با طول ۱۰۰ کاراکتر
+        
+        # ایجاد یک رکورد جدید از مدل رمز یکبار مصرف با استفاده از داده‌های تاییدشده
+        otp = OneTimePassword.objects.create(
+            phone=validated_data['phone'],  # ذخیره شماره تلفن کاربر
+            token=token,  # ذخیره توکن
+            code=code  # ذخیره کد
+        )
+        
+        # ذخیره شیء رمز یکبار مصرف در دیتابیس
+        otp.save()
+        
+        # تنظیم زمان انقضای رمز یکبار مصرف
+        otp.get_expiration()  # فراخوانی متد زمان انقضا از مدل
+        
+        # بازگشت داده‌های رمز یکبار مصرف
+        return {
+            'token': token,  # توکن رمز یکبار مصرف
+            'code': code  # کد رمز یکبار مصرف
+        }
+
+
