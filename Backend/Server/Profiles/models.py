@@ -9,6 +9,12 @@ class JobSeekerProfile(models.Model):
     پروفایل جوینده کار به سبک لینکدین.
     شامل اطلاعات حرفه‌ای و شخصی برای جویندگان کار است.
     """
+
+    # جنسیت کارجو
+    class Gender(models.TextChoices):
+        WOMEN = 'W', 'خانوم'
+        MAN = 'M', 'آقا'
+
     # وضعیت کارت ملی: وضعیت بررسی کارت ملی
     class IdCardStatus(models.TextChoices):
         PENDING = 'P', 'در انتظار تایید'
@@ -20,6 +26,22 @@ class JobSeekerProfile(models.Model):
         "Users.User",
         on_delete=models.CASCADE,
         verbose_name="کاربر"
+    )
+    # جنسیت کارجو
+    gender = models.CharField(
+        max_length=5,
+        verbose_name="جنسیت",
+        default=Gender.MAN
+    )
+    # سن
+    age = models.PositiveIntegerField(
+        verbose_name="سن",
+        default=18
+    )
+    # تعداد فرزند
+    kids_count = models.IntegerField(
+        default=0,
+        verbose_name="تعداد فرزند"
     )
     # عنوان شغلی: مثلاً "توسعه‌دهنده نرم‌افزار"
     headline = models.CharField(

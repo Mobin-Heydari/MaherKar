@@ -68,6 +68,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name="نام کاربری",
     )
 
+    # نام و نام خوانوادگی کاربر
+    full_name = models.CharField(
+        verbose_name="نام و نام خوانوادگی",
+        max_length=255,
+        null=True, blank=True
+    )
+
     # تاریخ عضویت: ذخیره تاریخ ثبت‌نام کاربر در سیستم
     joined_date = models.DateField(
         auto_now_add=True,
