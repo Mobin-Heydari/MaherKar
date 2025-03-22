@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'Users.apps.UsersConfig',
     'Profiles.apps.ProfilesConfig',
     'Companies.apps.CompaniesConfig',
+    'Locations.apps.LocationsConfig',
     'Authentication.apps.AuthenticationConfig'
 ]
 
