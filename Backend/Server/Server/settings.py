@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     # Custom apps
     'Users.apps.UsersConfig',
     'Profiles.apps.ProfilesConfig',
+    'Companies.apps.CompaniesConfig',
     'Authentication.apps.AuthenticationConfig'
 ]
 
