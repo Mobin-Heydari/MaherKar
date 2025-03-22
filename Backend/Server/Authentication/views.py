@@ -1,13 +1,16 @@
-from rest_framework.views import APIView, Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+from django.shortcuts import get_object_or_404  # ایمپورت برای دریافت شیء یا پرتاب خطای 404 اگر شیء یافت نشود
+from rest_framework.views import APIView, Response  # ایمپورت کلاس APIView برای ایجاد ویو و Response برای پاسخ به درخواست‌ها
+from rest_framework.permissions import IsAuthenticated  # ایمپورت مجوز برای احراز هویت کاربران
+from rest_framework import status  # ایمپورت کد وضعیت برای پاسخ‌های HTTP
 
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken  # ایمپورت برای ایجاد توکن JWT
+from rest_framework.exceptions import ValidationError  # ایمپورت خطای اعتبارسنجی
 
-from Users.models import User
+from Users.models import User  # ایمپورت مدل کاربر از برنامه Users
 
-from .serializers import LoginSerializer
+from .serializers import LoginSerializer, UserRegisterOneTimePasswordSerializer, UserRegisterSerializer  # ایمپورت سریالایزرهای مربوطه
+from .models import OneTimePassword, UserRegisterOTP  # ایمپورت مدل‌های رمز یکبار مصرف و ثبت‌نام
+
 
 
 
@@ -18,8 +21,7 @@ class LoginAPIView(APIView):
     ویو ورود برای احراز هویت کاربران و بازگرداندن توکن JWT.
     """
     
-    # تعریف متد POST برای مدیریت درخواست‌های ورود
-    def post(self, request):
+    def post(self, request):  # متد POST برای مدیریت درخواست‌های ورود
         """
         مدیریت درخواست‌های POST برای ویو ورود.
         
@@ -27,31 +29,21 @@ class LoginAPIView(APIView):
         :return: شیء پاسخ با توکن‌های refresh و access
         """
         
-        # ایجاد یک نمونه از سریالایزر با داده‌های درخواست
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)  # ایجاد یک نمونه از سریالایزر با داده‌های درخواست
 
-        # بررسی اینکه آیا کاربر قبلاً وارد شده است
-        if request.user.is_authenticated:
-            return Response({"message": "شما قبلاً وارد شده‌اید"}, status=status.HTTP_400_BAD_REQUEST)
+        if request.user.is_authenticated:  # بررسی اینکه آیا کاربر قبلاً وارد شده است
+            return Response({"message": "شما قبلاً وارد شده‌اید"}, status=status.HTTP_400_BAD_REQUEST)  # پاسخ خطا
         else:
-            # بررسی اعتبار سریالایزر
-            if serializer.is_valid():
-                # استخراج شماره تلفن از داده‌های اعتبارسنجی شده
-                phone = serializer.validated_data['phone']
-                
-                # دریافت شیء کاربر از دیتابیس
-                user = User.objects.get(phone=phone)
+            if serializer.is_valid():  # بررسی اعتبار سریالایزر
+                phone = serializer.validated_data['phone']  # استخراج شماره تلفن از داده‌های تاییدشده
+                user = User.objects.get(phone=phone)  # دریافت شیء کاربر از دیتابیس
 
-                # بررسی اینکه آیا کاربر فعال است
-                if not user.is_active:
-                    # بازگشت یک پاسخ خطا در صورت غیرفعال بودن کاربر
-                    return Response({'error': 'کاربر فعال نیست'}, status=status.HTTP_401_UNAUTHORIZED)
+                if not user.is_active:  # بررسی اینکه آیا کاربر فعال است
+                    return Response({'error': 'کاربر فعال نیست'}, status=status.HTTP_401_UNAUTHORIZED)  # پاسخ خطا
                 
-                # ایجاد یک توکن refresh برای کاربر
-                refresh = RefreshToken.for_user(user)
+                refresh = RefreshToken.for_user(user)  # ایجاد توکن refresh برای کاربر
                 
-                # بازگشت یک پاسخ با توکن‌های refresh و access
-                return Response(
+                return Response(  # پاسخ موفق با توکن‌ها
                     {
                         'refresh': str(refresh), 
                         'access': str(refresh.access_token)
@@ -59,11 +51,9 @@ class LoginAPIView(APIView):
                     status=status.HTTP_200_OK
                 )
             else:
-                # بازگشت یک پاسخ خطا با خطاهای سریالایزر
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # پاسخ خطا با جزئیات سریالایزر
     
-    # تعریف یک متد برای مدیریت استثناهایی که در طول اجرای ویو رخ می‌دهند
-    def handle_exception(self, exc):
+    def handle_exception(self, exc):  # متد برای مدیریت استثناها
         """
         مدیریت استثناهایی که در طول اجرای ویو رخ می‌دهند.
         
@@ -71,9 +61,93 @@ class LoginAPIView(APIView):
         :return: شیء پاسخ با پیام خطا
         """
         
-        # بررسی اینکه آیا استثنا خطای اعتبارسنجی است
-        if isinstance(exc, ValidationError):
-            # بازگشت یک پاسخ با پیام خطای اعتبارسنجی
-            return Response({'error': 'خطای اعتبارسنجی'}, status=status.HTTP_400_BAD_REQUEST)
-        # فراخوانی متد handle_exception کلاس والد برای سایر استثناها
-        return super().handle_exception(exc)
+        if isinstance(exc, ValidationError):  # بررسی اینکه آیا استثنا خطای اعتبارسنجی است
+            return Response({'error': 'خطای اعتبارسنجی'}, status=status.HTTP_400_BAD_REQUEST)  # پاسخ خطا
+        return super().handle_exception(exc)  # مدیریت سایر استثناها با کلاس والد
+
+
+
+
+# ویو برای مدیریت تولید رمز یکبار مصرف
+class UserRegisterOtpAPIView(APIView):
+    """
+    ویو برای تولید رمز یکبار مصرف.
+    """
+    def post(self, request):  # متد POST برای درخواست رمز یکبار مصرف
+        """
+        مدیریت درخواست POST برای تولید رمز یکبار مصرف.
+        """
+        if not request.user.is_authenticated:  # بررسی اینکه آیا کاربر وارد نشده است
+
+            serializer = UserRegisterOneTimePasswordSerializer(data=request.data)  # نمونه سریالایزر
+
+            if serializer.is_valid(raise_exception=True):  # اعتبارسنجی داده‌ها
+
+                otp_data = serializer.create(validated_data=serializer.validated_data)  # تولید رمز یکبار مصرف
+
+                return Response({  # پاسخ موفق با جزئیات رمز
+                    'Detail': {
+                        'Message': 'Otp created successfully',
+                        'token': otp_data['token'], 
+                        'code': otp_data['code'] 
+                    }
+                }, status=status.HTTP_201_CREATED)
+            
+            else:
+                return Response({'Detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)  # پاسخ خطا
+        else:
+            return Response({'Detail': 'You are already logged in'}, status=status.HTTP_400_BAD_REQUEST)  # پاسخ خطا اگر کاربر وارد شده باشد
+
+
+# ویو برای مدیریت ثبت‌نام کاربران با تایید رمز یکبار مصرف
+class UserRegisterOtpValidateAPIView(APIView):
+    """
+    ویو برای ثبت‌نام کاربران با تایید رمز یکبار مصرف.
+    """
+    def post(self, request, token):  # متد POST برای ثبت‌نام کاربر
+        """
+        مدیریت درخواست POST برای ثبت‌نام و تایید رمز یکبار مصرف.
+        """
+        if not request.user.is_authenticated:  # بررسی اینکه آیا کاربر وارد نشده است
+            otp = get_object_or_404(OneTimePassword, token=token)  # دریافت رمز یکبار مصرف با توکن
+
+            if otp:
+            
+                if otp.registration_otps:  # بررسی وجود ثبت‌نام مرتبط
+                    serializer = UserRegisterSerializer(data=request.data, context={'otp_token': otp.token})  # سریالایزر ثبت‌نام
+
+                    if serializer.is_valid(raise_exception=True):  # اعتبارسنجی داده‌ها
+
+                        user_data = serializer.create(
+                            validated_data=serializer.validated_data, 
+                            token=token
+                        )  # ذخیره کاربر
+
+                        return Response({  # پاسخ موفق با جزئیات کاربر
+                            'Detail': {
+                                'Message': 'User created successfully',
+                                'User': user_data['user'],
+                                'Token': user_data['tokens']
+                            }
+                        }, status=status.HTTP_201_CREATED)
+
+                    else:
+                        return Response(
+                            {'Detail': serializer.errors}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )  # پاسخ خطا
+                else:
+                    return Response(
+                        {'Detail': 'Otp register does not exist.'}, 
+                        status=status.HTTP_404_NOT_FOUND
+                    )  # پاسخ خطا اگر ثبت‌نام وجود ندارد
+            else:
+                return Response(
+                    {'Detail': 'OTP does not exist'}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )  # پاسخ خطا اگر رمز یافت نشود
+        else:
+            return Response(
+                {'Detail': 'You are already authenticated'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )  # پاسخ خطا اگر کاربر قبلاً احراز هویت شده باشد
