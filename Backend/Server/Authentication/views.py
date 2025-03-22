@@ -11,7 +11,9 @@ from Users.models import User  # ایمپورت مدل کاربر از برنا�
 from .serializers import LoginSerializer, UserRegisterOneTimePasswordSerializer, UserRegisterSerializer  # ایمپورت سریالایزرهای مربوطه
 from .models import OneTimePassword, UserRegisterOTP  # ایمپورت مدل‌های رمز یکبار مصرف و ثبت‌نام
 
+from kavenegar import KavenegarAPI, APIException, HTTPException
 
+from Server.settings import KAVENEGAR_API_KEY
 
 
 
@@ -68,6 +70,7 @@ class LoginAPIView(APIView):
 
 
 
+
 # ویو برای مدیریت تولید رمز یکبار مصرف
 class UserRegisterOtpAPIView(APIView):
     """
@@ -84,6 +87,16 @@ class UserRegisterOtpAPIView(APIView):
             if serializer.is_valid(raise_exception=True):  # اعتبارسنجی داده‌ها
 
                 otp_data = serializer.create(validated_data=serializer.validated_data)  # تولید رمز یکبار مصرف
+
+                try:
+                    api = KavenegarAPI(str(KavenegarAPI))
+                    params = { 'sender': '2000660110', 'receptor': str(otp_data['phone']), 'message': f'به ماهر کار خوش آمدید لطفا کد ارسال شده را وارد کنید. {otp_data['code']}' }
+                    response = api.sms_send(params)
+                    print(response)
+                except APIException as e: 
+                    print(e)
+                except HTTPException as e: 
+                    print(e)
 
                 return Response({  # پاسخ موفق با جزئیات رمز
                     'Detail': {
