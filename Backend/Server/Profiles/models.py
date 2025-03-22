@@ -5,128 +5,50 @@ from Locations.models import City
 
 
 
-class JobSeekerProfile(models.Model):
-    """
-    پروفایل جوینده کار به سبک لینکدین.
-    شامل اطلاعات حرفه‌ای و شخصی برای جویندگان کار است.
-    """
 
-    # جنسیت کارجو
+class PersonalInformation(models.Model):
     class Gender(models.TextChoices):
         WOMEN = 'W', 'خانوم'
         MAN = 'M', 'آقا'
 
-    # وضعیت کارت ملی: وضعیت بررسی کارت ملی
+    gender = models.CharField(
+        max_length=1,
+        choices=Gender.choices,
+        verbose_name="جنسیت",
+        default=Gender.MAN
+    )
+    age = models.PositiveIntegerField(
+        verbose_name="سن",
+        default=18
+    )
+
+    class Meta:
+        verbose_name = "اطلاعات شخصی"
+        verbose_name_plural = "اطلاعات شخصی"
+
+    def __str__(self):
+        return f"{self.get_gender_display()} - {self.age}"
+
+
+class IdCardInformation(models.Model):
     class IdCardStatus(models.TextChoices):
         PENDING = 'P', 'در انتظار تایید'
         VERIFIED = 'V', 'تایید شده'
         REJECTED = 'R', 'رد شده'
 
-    # ارتباط یک به یک با مدل کاربر پایه
-    user = models.OneToOneField(
-        "Users.User",
-        on_delete=models.CASCADE,
-        verbose_name="کاربر"
-    )
-    # جنسیت کارجو
-    gender = models.CharField(
-        max_length=5,
-        verbose_name="جنسیت",
-        default=Gender.MAN
-    )
-    # سن
-    age = models.PositiveIntegerField(
-        verbose_name="سن",
-        default=18
-    )
-    # تعداد فرزند
-    kids_count = models.IntegerField(
-        default=0,
-        verbose_name="تعداد فرزند"
-    )
-    # عنوان شغلی: مثلاً "توسعه‌دهنده نرم‌افزار"
-    headline = models.CharField(
-        max_length=255,
-        verbose_name="عنوان شغلی",
-        help_text="عنوان شغلی کوتاه (الزامی)"
-    )
-    # بیوگرافی: توضیح مختصر در مورد تجربه و اهداف
-    bio = models.TextField(
-        verbose_name="بیوگرافی",
-        help_text="توضیح مختصر درباره خودتان",
-        blank=True
-    )
-    # تصویر پروفایل: آپلود تصویر کاربر
-    profile_picture = models.ImageField(
-        upload_to='jobseekers/profile_pics/',
+    id_card_number = models.CharField(
+        verbose_name="شماره ملی",
+        max_length=13,
+        blank=True,
         null=True,
-        blank=True,
-        verbose_name="تصویر پروفایل"
     )
-
-    location = models.ForeignKey(
-        City,
-        on_delete=models.CASCADE,
-        max_length=100,
-        verbose_name="شهر"  # شهر
-    )
-
-    # صنعت: حوزه فعالیت شغلی (اختیاری)
-    industry = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="صنعت",
-        help_text="حوزه فعالیت شغلی"
-    )
-    # ایمیل تماس: جهت نمایش (اختیاری)
-    contact_email = models.EmailField(
-        blank=True,
-        verbose_name="ایمیل تماس"
-    )
-    # شماره تماس: جهت ارتباط (اختیاری)
-    contact_phone = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="شماره تماس"
-    )
-    # وب‌سایت: لینک شخصی یا نمونه‌کار آنلاین (اختیاری)
-    website = models.URLField(
-        blank=True,
-        verbose_name="وب‌سایت"
-    )
-    # لینکدین: آدرس پروفایل لینکدین (اختیاری)
-    linkedin_profile = models.URLField(
-        blank=True,
-        verbose_name="لینکدین"
-    )
-    # رزومه: آپلود فایل رزومه (الزامی)
-    resume = models.FileField(
-        upload_to='jobseekers/resumes/',
-        verbose_name="رزومه",
-        help_text="بارگذاری فایل رزومه (CV)"
-    )
-    # ترجیحات شغلی: نوع شغل مورد نظر (مثلاً تمام‌وقت یا پاره‌وقت) (اختیاری)
-    job_type_preference = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="نوع شغل مورد نظر",
-        help_text="مثلاً تمام‌وقت یا پاره‌وقت"
-    )
-    # حقوق مورد انتظار: مقدار عددی حقوق مورد انتظار (اختیاری)
-    expected_salary = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        verbose_name="حقوق مورد انتظار"
-    )
-    # فیلد کارت ملی: آپلود تصویر یا اسکن کارت ملی (الزامی)
     id_card = models.FileField(
         upload_to='jobseekers/id_cards/',
         verbose_name="کارت ملی",
-        help_text="بارگذاری تصویر/اسکن کارت ملی (الزامی)"
+        help_text="بارگذاری تصویر/اسکن کارت ملی",
+        blank=True,
+        null=True,
     )
-    # وضعیت کارت ملی: نشان‌دهنده وضعیت بررسی کارت ملی
     id_card_status = models.CharField(
         max_length=1,
         choices=IdCardStatus.choices,
@@ -134,19 +56,112 @@ class JobSeekerProfile(models.Model):
         verbose_name="وضعیت کارت ملی",
         help_text="وضعیت بررسی کارت ملی"
     )
-    # رابطه چند به چند با مدل مهارت؛ کاربر می‌تواند مهارت‌های از پیش تعریف‌شده را انتخاب کند.
-    skills = models.ManyToManyField(
-        'Skill',
-        blank=True,
-        verbose_name="مهارت‌ها",
-        help_text="انتخاب مهارت‌های مرتبط از بین مهارت‌های تعریف شده"
+
+    class Meta:
+        verbose_name = "اطلاعات کارت ملی"
+        verbose_name_plural = "اطلاعات کارت ملی"
+
+    def __str__(self):
+        id_val = self.id_card_number if self.id_card_number else "No ID"
+        return f"{id_val} - {self.get_id_card_status_display()}"
+
+
+
+
+class JobSeekerProfile(models.Model):
+    """
+    پروفایل جوینده کار به سبک لینکدین.
+    شامل اطلاعات حرفه‌ای و شخصی برای جویندگان کار.
+    """
+    user = models.OneToOneField(
+        "Users.User",
+        on_delete=models.CASCADE,
+        verbose_name="کاربر"
     )
-    # تاریخ ایجاد پروفایل
+    personal_info = models.OneToOneField(
+        PersonalInformation,
+        on_delete=models.CASCADE,
+        verbose_name="اطلاعات شخصی",
+        related_name="jobseeker_personal_info"
+    )
+    id_card_info = models.OneToOneField(
+        IdCardInformation,
+        on_delete=models.CASCADE,
+        verbose_name="اطلاعات کارت ملی",
+        related_name="jobseeker_id_card_info"
+    )
+    kids_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="تعداد فرزند"
+    )
+    headline = models.CharField(
+        max_length=255,
+        verbose_name="عنوان شغلی",
+        help_text="عنوان شغلی کوتاه (الزامی)"
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name="بیوگرافی",
+        help_text="توضیح مختصر درباره خودتان"
+    )
+    profile_picture = models.ImageField(
+        upload_to='jobseekers/profile_pics/',
+        null=True,
+        blank=True,
+        verbose_name="تصویر پروفایل"
+    )
+    location = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="شهر"
+    )
+    industry = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="صنعت",
+        help_text="حوزه فعالیت شغلی"
+    )
+    contact_email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل تماس"
+    )
+    contact_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="شماره تماس"
+    )
+    website = models.URLField(
+        blank=True,
+        verbose_name="وب‌سایت"
+    )
+    linkedin_profile = models.URLField(
+        blank=True,
+        verbose_name="لینکدین"
+    )
+    resume = models.FileField(
+        upload_to='jobseekers/resumes/',
+        verbose_name="رزومه",
+        help_text="بارگذاری فایل رزومه (CV)"
+    )
+    job_type_preference = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="نوع شغل مورد نظر",
+        help_text="مثلاً تمام‌وقت یا پاره‌وقت"
+    )
+    expected_salary = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="حقوق مورد انتظار"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
-    # تاریخ به‌روزرسانی پروفایل
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
@@ -160,48 +175,40 @@ class JobSeekerProfile(models.Model):
         return f"{self.user.username} - پروفایل جوینده کار"
 
 
-
-
 class Experience(models.Model):
     """
     مدل تجربه کاری برای جویندگان کار.
     مشابه بخش تجربه‌های کاری لینکدین.
     """
-    # ارتباط با پروفایل جوینده کار
     job_seeker = models.ForeignKey(
         JobSeekerProfile,
         on_delete=models.CASCADE,
         related_name="experiences",
         verbose_name="جوینده کار"
     )
-    # عنوان شغلی در این تجربه
     title = models.CharField(
         max_length=255,
         verbose_name="عنوان شغلی",
         help_text="عنوان شغلی یا نقش در این تجربه"
     )
-    # نام شرکت یا سازمان
     company = models.CharField(
         max_length=255,
         verbose_name="شرکت"
     )
-    # مکان شرکت (اختیاری)
-    location = models.CharField(
-        max_length=255,
-        blank=True,
+    location = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        related_name="company_locations",
         verbose_name="مکان"
     )
-    # تاریخ شروع کار
     start_date = models.DateField(
         verbose_name="تاریخ شروع"
     )
-    # تاریخ پایان (اختیاری؛ می‌تواند خالی باشد در صورت ادامه داشتن فعالیت)
     end_date = models.DateField(
         null=True,
         blank=True,
         verbose_name="تاریخ پایان"
     )
-    # توضیحات و شرح وظایف (اختیاری)
     description = models.TextField(
         blank=True,
         verbose_name="توضیحات"
@@ -210,50 +217,42 @@ class Experience(models.Model):
     class Meta:
         verbose_name = "تجربه کاری"
         verbose_name_plural = "تجربیات کاری"
+        ordering = ['-start_date']
 
     def __str__(self):
         return f"{self.title} at {self.company}"
-
-
 
 
 class Education(models.Model):
     """
     مدل تحصیلات، مشابه بخش تحصیلات لینکدین.
     """
-    # ارتباط با پروفایل جوینده کار
     job_seeker = models.ForeignKey(
         JobSeekerProfile,
         on_delete=models.CASCADE,
         related_name="educations",
         verbose_name="جوینده کار"
     )
-    # نام دانشگاه یا مدرسه
     school = models.CharField(
         max_length=255,
         verbose_name="دانشگاه/مدرسه"
     )
-    # مدرک تحصیلی دریافت شده
     degree = models.CharField(
         max_length=255,
         verbose_name="مدرک تحصیلی"
     )
-    # رشته یا گرایش تحصیلی
     field_of_study = models.CharField(
         max_length=255,
         verbose_name="رشته تحصیلی"
     )
-    # تاریخ شروع تحصیل
     start_date = models.DateField(
         verbose_name="تاریخ شروع"
     )
-    # تاریخ پایان تحصیل (اختیاری)
     end_date = models.DateField(
         null=True,
         blank=True,
         verbose_name="تاریخ پایان"
     )
-    # توضیحات (اختیاری)
     description = models.TextField(
         blank=True,
         verbose_name="توضیحات"
@@ -262,32 +261,27 @@ class Education(models.Model):
     class Meta:
         verbose_name = "تحصیلات"
         verbose_name_plural = "تحصیلات"
+        ordering = ['-start_date']
 
     def __str__(self):
-        return f"{self.degree} in {self.field_of_study} from {self.school}"
-
-
+        return f"{self.degree} in {self.field_of_study} at {self.school}"
 
 
 class SkillCategory(models.Model):
     """
     مدل دسته‌بندی مهارت‌ها.
-    این مدل برای سازماندهی مهارت‌ها در دسته‌های مشخص مانند "برنامه نویسی"، "طراحی" و غیره استفاده می‌شود.
     """
-    # نام دسته‌بندی؛ این فیلد باید یکتا باشد
     name = models.CharField(
         max_length=50,
         unique=True,
         verbose_name="نام دسته",
         help_text="نام دسته‌بندی مهارت (مثلاً 'برنامه نویسی' یا 'طراحی')"
     )
-    # اسلاگ تولید شده از نام دسته؛ برای ایجاد URL دوستانه
     slug = models.SlugField(
         unique=True,
         verbose_name="اسلاگ دسته",
         help_text="اسلاگ برای دسته‌بندی که معمولاً از نام تولید می‌شود"
     )
-    # آیکون مرتبط با دسته‌بندی (اختیاری)
     icon = models.ImageField(
         upload_to='skill_category_icons/',
         null=True,
@@ -302,36 +296,30 @@ class SkillCategory(models.Model):
         ordering = ['name']
 
     def save(self, *args, **kwargs):
-        # در صورتی که اسلاگ وجود ندارد، از نام دسته استفاده کرده و به صورت خودکار تولید می‌شود.
         if not self.slug:
             self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
+        super(SkillCategory, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
 
-
 class Skill(models.Model):
     """
     مدل مهارت برای ذخیره مهارت‌های حرفه‌ای.
-    این مهارت‌ها تنها توسط مدیر سیستم ایجاد و ویرایش می‌شوند.
-    کاربران (جویندگان کار) تنها می‌توانند از مهارت‌های موجود استفاده کنند.
+    مهارت‌ها تنها توسط مدیر سیستم ایجاد و ویرایش می‌شوند؛ جویندگان کار از مهارت‌های موجود استفاده می‌کنند.
     """
-    # نام مهارت – باید یکتا باشد تا از تکراری شدن جلوگیری شود.
     name = models.CharField(
         max_length=100,
         unique=True,
         verbose_name="نام مهارت",
         help_text="مثلاً Python, Java, طراحی گرافیک"
     )
-    # توضیحات اختیاری جهت شرح مهارت
     description = models.TextField(
         blank=True,
         verbose_name="توضیحات مهارت",
         help_text="شرح مختصر مهارت (اختیاری)"
     )
-    # آیکون مرتبط با مهارت (اختیاری)
     icon = models.ImageField(
         upload_to='skill_icons/',
         null=True,
@@ -339,13 +327,11 @@ class Skill(models.Model):
         verbose_name="آیکون مهارت",
         help_text="تصویر یا آیکون مرتبط با این مهارت (اختیاری)"
     )
-    # وبسایت مرتبط با مهارت (اختیاری)
     website = models.URLField(
         blank=True,
         verbose_name="وبسایت",
         help_text="وبسایت مرتبط با مهارت (اختیاری)"
     )
-    # ارتباط مهارت با دسته‌بندی آن
     category = models.ForeignKey(
         SkillCategory,
         on_delete=models.SET_NULL,
@@ -371,21 +357,65 @@ class EmployerProfile(models.Model):
     پروفایل کارفرما به سبک لینکدین.
     شامل اطلاعات شرکت و اطلاعات تماس مربوط به کارفرمایان است.
     """
-
-    # ارتباط یک به یک با مدل کاربر پایه (کاربر باید از نوع کارفرما باشد)
     user = models.OneToOneField(
         "Users.User",
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
-
-    # تاریخ ایجاد پروفایل: به صورت خودکار هنگام ایجاد ثبت می‌شود
+    company_name = models.CharField(
+        max_length=255,
+        verbose_name="نام شرکت",
+        help_text="نام شرکت یا سازمان"
+    )
+    personal_info = models.OneToOneField(
+        PersonalInformation,
+        on_delete=models.CASCADE,
+        verbose_name="اطلاعات شخصی",
+        related_name="employer_personal_info"
+    )
+    id_card_info = models.OneToOneField(
+        IdCardInformation,
+        on_delete=models.CASCADE,
+        verbose_name="اطلاعات کارت ملی",
+        related_name="employer_id_card_info"
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name="بیوگرافی",
+        help_text="توضیح مختصر درباره شرکت یا اهداف"
+    )
+    profile_picture = models.ImageField(
+        upload_to='employers/profile_pics/',
+        null=True,
+        blank=True,
+        verbose_name="تصویر پروفایل"
+    )
+    location = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="مکان"
+    )
+    industry = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="صنعت",
+        help_text="حوزه فعالیت شغلی"
+    )
+    contact_email = models.EmailField(
+        blank=True,
+        verbose_name="ایمیل تماس"
+    )
+    contact_phone = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="شماره تماس"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
-    
-    # تاریخ به‌روزرسانی پروفایل: به صورت خودکار هنگام آپدیت پروفایل تنظیم می‌شود
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
@@ -399,29 +429,20 @@ class EmployerProfile(models.Model):
         return f"{self.company_name} - {self.user.username}"
 
 
-
-
 class AdminProfile(models.Model):
     """
     پروفایل مدیر سیستم.
-    مدیران معمولاً نیازی به اطلاعات حرفه‌ای پیچیده ندارند؛ اما ممکن است فیلدهایی مانند یادداشت‌های مدیریتی و سطح دسترسی داشته باشند.
+    مدیران معمولاً نیازی به اطلاعات حرفه‌ای پیچیده ندارند؛ اما فیلدهای مدیریتی اضافی می‌توانند در آینده افزوده شوند.
     """
-
-    # ارتباط یک به یک با مدل کاربر پایه؛ کاربر مربوط به مدیر باید از نوع "Admin" باشد.
     user = models.OneToOneField(
         "Users.User",
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
-    
-    
-    # تاریخ ایجاد پروفایل: ذخیره به صورت خودکار هنگام ایجاد
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
-    
-    # تاریخ به‌روزرسانی پروفایل: به صورت خودکار هنگام به‌روزرسانی تنظیم می‌شود
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
@@ -435,29 +456,20 @@ class AdminProfile(models.Model):
         return f"{self.user.username} - Admin"
 
 
-
 class SupportProfile(models.Model):
     """
     پروفایل پشتیبان سیستم.
     این مدل اطلاعات تخصص و ساعات کاری پشتیبان را ذخیره می‌کند.
-    پشتیبان می‌تواند شامل حوزه تخصص، ساعات کاری و امتیازات ارزیابی شده باشد.
     """
-
-    # ارتباط یک به یک با مدل کاربر؛ کاربر مربوط به پشتیبان باید از نوع "Support" باشد.
     user = models.OneToOneField(
         "Users.User",
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
-    
-    
-    # تاریخ ایجاد پروفایل: ثبت خودکار هنگام ایجاد
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
-    
-    # تاریخ به‌روزرسانی پروفایل: ثبت خودکار هنگام به‌روزرسانی
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
