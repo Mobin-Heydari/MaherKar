@@ -97,7 +97,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "phone"
 
     # فیلدهای ضروری برای ساخت کاربر جدید: علاوه بر شماره تماش
-    REQUIRED_FIELDS = ["username", "email"]
+    REQUIRED_FIELDS = ["username", "email", "full_name"]
 
     # مدیریت کاربران
     objects = UserManager()
