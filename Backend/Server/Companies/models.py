@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 
+from Locations.models import City
+
 
 
 
@@ -73,18 +75,14 @@ class Company(models.Model):
         null=True, 
         verbose_name="آدرس"  # آدرس کامل شرکت
     )
-    city = models.CharField(
-        max_length=100, 
-        blank=True, 
-        null=True, 
+
+    location = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        max_length=100,
         verbose_name="شهر"  # شهر
     )
-    province = models.CharField(
-        max_length=100, 
-        blank=True, 
-        null=True, 
-        verbose_name="استان"  # استان
-    )
+
     postal_code = models.CharField(
         max_length=20, 
         blank=True, 
