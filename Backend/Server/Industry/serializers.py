@@ -1,5 +1,6 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Industry, IndustryCategory  # Make sure to update the import for Category
+from .models import Industry, IndustryCategory
 
 
 
@@ -10,7 +11,6 @@ class IndustryCategorySerializer(serializers.ModelSerializer):
             'id',
             'name',
             'slug',
-            'description'
         ]
         read_only_fields = ['slug']
 
@@ -20,12 +20,8 @@ class IndustryCategorySerializer(serializers.ModelSerializer):
         """
         # Auto-generate slug handled in the model's save() method
         name = validated_data.get('name')
-        description = validated_data.get('description', '')
 
-        category = IndustryCategory.objects.create(
-            name=name,
-            description=description
-        )
+        category = IndustryCategory.objects.create(name=name)
         return category
 
     def update(self, instance, validated_data):
@@ -34,15 +30,15 @@ class IndustryCategorySerializer(serializers.ModelSerializer):
         """
         # Update fields
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
 
         # Save changes
         instance.save()
         return instance
 
 
+
 class IndustrySerializer(serializers.ModelSerializer):
-    category = IndustryCategorySerializer()  # Use the complete Category representation
+    category_name = serializers.CharField(source='category.name', read_only=True)
 
     class Meta:
         model = Industry
@@ -51,49 +47,36 @@ class IndustrySerializer(serializers.ModelSerializer):
             'name',
             'slug',
             'category',
-            'description'
+            'category_name'
         ]
         read_only_fields = ['slug']
 
     def create(self, validated_data):
         """
-        Create a new Industry instance with a nested category.
+        Create a new Industry instance by associating with an existing category using its slug.
         """
-        # Extract category data
-        category_data = validated_data.pop('category')
+        # Extract category slug from the context
+        category_slug = self.context.get('category_slug')
+        if not category_slug:
+            raise serializers.ValidationError({"category_slug": "Slug of the category is required."})
         
-        # Ensure the category exists or create it
-        category, _ = IndustryCategory.objects.get_or_create(
-            name=category_data['name'],
-            defaults={'description': category_data.get('description', '')}
-        )
+        # Retrieve the category using the slug
+        category = get_object_or_404(IndustryCategory, slug=category_slug)
 
-        # Create the industry
+        # Create the industry with the retrieved category
         industry = Industry.objects.create(
+            name=validated_data.get('name'),
             category=category,
-            **validated_data
         )
         return industry
 
     def update(self, instance, validated_data):
         """
-        Update an existing Industry instance and its category.
+        Update an existing Industry instance.
         """
-        # Extract category data
-        category_data = validated_data.pop('category', None)
-        
-        # Update or create category if data is provided
-        if category_data:
-            category, _ = IndustryCategory.objects.get_or_create(
-                name=category_data['name'],
-                defaults={'description': category_data.get('description', '')}
-            )
-            instance.category = category
-
-        # Update other Industry fields
+        # Update fields
         instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
 
-        # Save the instance
+        # Save changes
         instance.save()
         return instance
