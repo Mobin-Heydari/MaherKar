@@ -2,14 +2,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .models import Company
 from .serializers import CompanySerializer
+from .permissions import IsAdminOrOwnerForUpdateAndEmployerForCreate
+
 
 
 
 class CompanyViewSet(ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    permission_classes = [IsAuthenticated, IsAdminOrOwnerForUpdateAndEmployerForCreate]
     lookup_field = 'slug'
 
     def list(self, request, *args, **kwargs):
