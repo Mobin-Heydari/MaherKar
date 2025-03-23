@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from Locations.models import City
-
+from Industry.models import Industry
 
 
 
@@ -96,8 +96,9 @@ class Company(models.Model):
         null=True, 
         verbose_name="تاریخ تأسیس"  # تاریخ تاسیس شرکت
     )
-    industry = models.CharField(
-        max_length=100, 
+    industry = models.ForeignKey(
+        Industry,
+        on_delete=models.CASCADE,
         blank=True, 
         null=True, 
         verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)

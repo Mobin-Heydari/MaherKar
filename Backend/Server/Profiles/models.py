@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from Locations.models import City
-
+from Industry.models import Industry
 
 
 
@@ -117,11 +117,12 @@ class JobSeekerProfile(models.Model):
         blank=True,
         verbose_name="شهر"
     )
-    industry = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="صنعت",
-        help_text="حوزه فعالیت شغلی"
+    industry = models.ForeignKey(
+        Industry,
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True, 
+        verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
     )
     contact_email = models.EmailField(
         blank=True,
@@ -397,11 +398,12 @@ class EmployerProfile(models.Model):
         blank=True,
         verbose_name="مکان"
     )
-    industry = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="صنعت",
-        help_text="حوزه فعالیت شغلی"
+    industry = models.ForeignKey(
+        Industry,
+        on_delete=models.CASCADE,
+        blank=True, 
+        null=True, 
+        verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
     )
     contact_email = models.EmailField(
         blank=True,
