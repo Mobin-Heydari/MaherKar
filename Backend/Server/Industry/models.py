@@ -11,11 +11,19 @@ class IndustryCategory(models.Model):
         unique=True,
         verbose_name="نام دسته‌بندی"
     )
+
     slug = models.SlugField(
         max_length=100,
         unique=True,
         blank=True,
         verbose_name="اسلاگ دسته‌بندی"
+    )
+
+    icon = models.ImageField(
+        upload_to='Industry/categories-icon/',
+        null=True,
+        blank=True,
+        verbose_name="آیکون",
     )
 
 
@@ -43,17 +51,20 @@ class Industry(models.Model):
     """
     Model for Industries
     """
+
     name = models.CharField(
         max_length=100,
         unique=True,
         verbose_name="نام صنعت"
     )
+
     slug = models.SlugField(
         max_length=100,
         unique=True,
         blank=True,
         verbose_name="اسلاگ صنعت"
     )
+    
     category = models.ForeignKey(
         IndustryCategory,
         on_delete=models.CASCADE,
@@ -61,7 +72,12 @@ class Industry(models.Model):
         verbose_name="دسته‌بندی"
     )
 
-
+    icon = models.ImageField(
+        upload_to='Industry/industries-icon/',
+        null=True,
+        blank=True,
+        verbose_name="آیکون",
+    )
 
     class Meta:
         verbose_name = "صنعت"
@@ -77,6 +93,40 @@ class Industry(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+
+    def __str__(self):
+        return self.name
+
+
+
+class Skill(models.Model):
+    """
+    مدل مهارت برای ذخیره مهارت‌های حرفه‌ای.
+    مهارت‌ها تنها توسط مدیر سیستم ایجاد و ویرایش می‌شوند؛ جویندگان کار از مهارت‌های موجود استفاده می‌کنند.
+    """
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="نام",
+    )
+
+    icon = models.ImageField(
+        upload_to='Industry/skills-icons/',
+        null=True,
+        blank=True,
+        verbose_name="آیکون",
+    )
+
+    industry = models.ForeignKey(
+        Industry,
+        on_delete=models.CASCADE,
+        verbose_name="صنعت",
+    )
+
+    class Meta:
+        verbose_name = "مهارت"
+        verbose_name_plural = "مهارت‌ها"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
