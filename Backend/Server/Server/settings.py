@@ -35,10 +35,11 @@ INSTALLED_APPS = [
 
     # Custom apps
     'Users.apps.UsersConfig',
+    'Resumes.apps.ResumesConfig',
     'Profiles.apps.ProfilesConfig',
+    'Industry.apps.IndustryConfig',
     'Companies.apps.CompaniesConfig',
     'Locations.apps.LocationsConfig',
-    'Industry.apps.IndustryConfig',
     'Authentication.apps.AuthenticationConfig',
     'Advertisements.apps.AdvertisementsConfig',
 ]
