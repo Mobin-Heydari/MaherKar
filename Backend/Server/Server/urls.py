@@ -10,4 +10,5 @@ urlpatterns = [
     path('users/', include('Users.urls', namespace='Users')),
     path('profiles/', include('Profiles.urls', namespace='Profiles')),
     path('auth/', include('Authentication.urls', namespace='Authentication')),
+    path('companies/', include('Companies.urls', namespace='Companies')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
