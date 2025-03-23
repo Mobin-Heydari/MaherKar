@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'Profiles.apps.ProfilesConfig',
     'Companies.apps.CompaniesConfig',
     'Locations.apps.LocationsConfig',
-    'Authentication.apps.AuthenticationConfig'
+    'Industry.apps.IndustryConfig',
+    'Authentication.apps.AuthenticationConfig',
 ]
 
 MIDDLEWARE = [
