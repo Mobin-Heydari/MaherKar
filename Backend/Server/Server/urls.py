@@ -11,4 +11,5 @@ urlpatterns = [
     path('profiles/', include('Profiles.urls', namespace='Profiles')),
     path('auth/', include('Authentication.urls', namespace='Authentication')),
     path('companies/', include('Companies.urls', namespace='Companies')),
+    path('resumes/', include('Resumes.urls', namespace='Resumes')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
