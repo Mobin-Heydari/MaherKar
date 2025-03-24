@@ -1,8 +1,12 @@
 from django.db import models
+
+
 from Companies.models import Company
 from Users.models import User
 from Industry.models import Industry
 from Locations.models import City
+from Profiles.models import JobSeekerProfile
+from Resumes.models import JobSeekerResume
 
 
 
@@ -158,3 +162,60 @@ class JobAdvertisement(models.Model):
         verbose_name = "آگهی کارفرما"
         verbose_name_plural = "آگهی کارفرمایان"
         ordering = ["-created_at"]
+
+
+
+
+
+class Application(models.Model):
+    # TextChoices for status
+    class StatusChoices(models.TextChoices):
+        PENDING = 'PE', 'در انتظار'
+        IN_REVIEW = 'IR', 'در حال بررسی'
+        ACCEPTED = 'AC', 'پذیرفته شده'
+        REJECTED = 'RE', 'رد شده'
+
+
+    job_seeker = models.ForeignKey(
+        'Profiles.JobSeekerProfile',
+        on_delete=models.CASCADE,
+        related_name="applications"
+    )
+
+    advertisement = models.ForeignKey(
+        'Advertisements.JobAdvertisement',
+        on_delete=models.CASCADE, 
+        related_name="applications"
+    )
+
+    cover_letter = models.TextField(blank=True)
+
+    resume = models.ForeignKey(
+        'Resumes.JobSeekerResume',
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING
+    )
+
+    employer_notes = models.TextField(blank=True, null=True)
+
+    viewed_by_employer = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.job_seeker.user.username} -> {self.advertisement.title}"
+
+
+    def mark_as_viewed(self):
+        self.viewed_by_employer = True
+        self.save()
+
+    def get_status_display_verbose(self):
+        return self.get_status_display()
