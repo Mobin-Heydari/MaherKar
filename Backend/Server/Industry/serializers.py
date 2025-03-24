@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from .models import Industry, IndustryCategory
+from .models import Industry, IndustryCategory, Skill
 
 
 
@@ -80,3 +80,12 @@ class IndustrySerializer(serializers.ModelSerializer):
         # Save changes
         instance.save()
         return instance
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    # Nest the industry details in the Skill representation.
+    industry = IndustrySerializer(read_only=True)
+    
+    class Meta:
+        model = Skill
+        fields = ('id', 'name', 'icon', 'industry')
