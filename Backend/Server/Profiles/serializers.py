@@ -1,33 +1,8 @@
 from rest_framework import serializers
-from .models import (
-    JobSeekerProfile, Experience, Education,
-    EmployerProfile, AdminProfile, SupportProfile
-)
+from .models import JobSeekerProfile, EmployerProfile, AdminProfile, SupportProfile
 
 
 
-
-
-
-class ExperienceSerializer(serializers.ModelSerializer):
-    """
-    سریالایزر برای مدل تجربه کاری.
-    این سریالایزر اطلاعات مربوط به هر تجربه کاری جوینده کار را برمی‌گرداند.
-    """
-    class Meta:
-        model = Experience
-        fields = ['id', 'title', 'company', 'location', 'start_date', 'end_date', 'description']
-
-
-
-class EducationSerializer(serializers.ModelSerializer):
-    """
-    سریالایزر برای مدل تحصیلات.
-    این سریالایزر تمام اطلاعات مربوط به تحصیلات یک جوینده کار را نمایش می‌دهد.
-    """
-    class Meta:
-        model = Education
-        fields = ['id', 'school', 'degree', 'field_of_study', 'start_date', 'end_date', 'description']
 
 
 
@@ -36,10 +11,6 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
     سریالایزر برای مدل پروفایل جوینده کار.
     این سریالایزر شامل فیلدهای اصلی، مهارت‌ها، تجربیات کاری و تحصیلات می‌باشد.
     """
-    # نمایش تجربیات کاری به صورت تو در تو؛ تنها خواندنی می‌باشد
-    experiences = ExperienceSerializer(many=True, read_only=True)
-    # نمایش تحصیلات به صورت تو در تو؛ تنها خواندنی می‌باشد
-    educations = EducationSerializer(many=True, read_only=True)
 
     class Meta:
         model = JobSeekerProfile
@@ -61,9 +32,7 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
             'id_card',
             'id_card_status',
             'created_at',
-            'updated_at',
-            'experiences',
-            'educations'
+            'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
 
@@ -106,8 +75,6 @@ class AdminProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'user',
-            'notes',
-            'admin_level',
             'created_at',
             'updated_at'
         ]
@@ -125,9 +92,6 @@ class SupportProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'user',
-            'expertise_area',
-            'work_hours',
-            'rating',
             'created_at',
             'updated_at'
         ]
