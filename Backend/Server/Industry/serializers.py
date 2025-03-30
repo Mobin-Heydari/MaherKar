@@ -89,3 +89,42 @@ class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ('id', 'name', 'icon', 'industry')
+
+    def create(self, validated_data):
+       # Extract industry slug from the context
+        industry_slug = self.context.get('industry_slug')
+        if not industry_slug:
+            raise serializers.ValidationError({"industry_slug": "Slug of the industry is required."})
+        
+        # Retrieve the industry using the slug
+        industry = get_object_or_404(Industry, slug=industry_slug)
+
+        skill = Skill.objects.create(
+            name=validated_data.get('name'),
+            icon=validated_data.get('icon'),
+            industry=industry
+        )
+
+        skill.save()
+
+        return skill
+    
+
+
+    def update(self, instance, validated_data):
+        """
+        Update an existing Industry instance.
+        """
+        
+        # Extract industry slug from the context
+        if industry_slug:
+            industry_slug = self.context.get('industry_slug')
+            industry = get_object_or_404(Industry, slug=industry_slug)
+            instance.industry = industry
+
+        # Update fields
+        instance.name = validated_data.get('name', instance.name)
+
+        # Save changes
+        instance.save()
+        return instance
