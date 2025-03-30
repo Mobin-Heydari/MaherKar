@@ -4,7 +4,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import IndustryCategory, Industry
-from .serializers import IndustryCategorySerializer, IndustrySerializer
+from .serializers import IndustryCategorySerializer, IndustrySerializer, SkillSerializer
 
 
 
@@ -102,7 +102,7 @@ class SkillViewSet(ModelViewSet):
         ViewSet for managing Industries.
     """
     queryset = Industry.objects.all()
-    serializer_class = IndustrySerializer
+    serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'slug'
 
