@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'Locations.apps.LocationsConfig',
     'Authentication.apps.AuthenticationConfig',
     'Advertisements.apps.AdvertisementsConfig',
+    'Subscriptions.apps.SubscriptionsConfig',
     'Reports.apps.ReportsConfig',
 ]
 
