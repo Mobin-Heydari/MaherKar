@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'Locations.apps.LocationsConfig',
     'Authentication.apps.AuthenticationConfig',
     'Advertisements.apps.AdvertisementsConfig',
+    'Reports.apps.ReportsConfig',
 ]
 
 MIDDLEWARE = [
