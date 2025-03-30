@@ -1,5 +1,7 @@
+from django.utils.text import slugify
+
 from rest_framework import serializers
-from Advertisements.models import JobAdvertisement, Application
+from .models import JobAdvertisement, Application, JobseekerResumeAdvertisement
 from Companies.models import Company
 from Companies.serializers import CompanySerializer
 from Users.serializers import UserSerializer
@@ -9,6 +11,8 @@ from Locations.models import City  # used for lookup
 
 from Profiles.serializers import JobSeekerProfileSerializer  # Serializer for JobSeekerProfile
 from Resumes.serializers import JobSeekerResumeSerializer   # Serializer for JobSeekerResume
+
+
 
 class JobAdvertisementSerializer(serializers.ModelSerializer):
     # Nested serializers for related models
@@ -113,6 +117,108 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
 
 
 
+class JobseekerResumeAdvertisementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobseekerResumeAdvertisement
+        fields = [
+            "id",
+            "job_seeker_profile",
+            "resume",
+            "title",
+            "industry",
+            "location",
+            "slug",
+            "description",
+            "status",
+            "gender",
+            "soldier_status",
+            "degree",
+            "experience",
+            "salary",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "status",         # Status is read-only via the API.
+            "job_seeker_profile",
+            "resume",
+            "industry",
+            "location",
+            "gender",
+            "soldier_status",
+            "degree",
+            "experience",
+            "salary",
+            "created_at",
+            "updated_at",
+        ]
+
+    def create(self, validated_data):
+        """
+        Create a JobseekerResumeAdvertisement instance by using the resume instance
+        (provided via serializer context) to fill in several fields automatically.
+        
+        This method:
+          - Expects the view to supply a 'resume' in the serializer context.
+          - Uses the resume to set:
+              • job_seeker_profile
+              • gender
+              • soldier_status
+              • degree
+              • experience
+              • salary (from expected_salary)
+              • industry
+              • location
+          - Generates a slug if one is not provided.
+        """
+        resume = self.context.get("resume")
+        if not resume:
+            raise serializers.ValidationError({"resume": "JobSeeker resume must be provided in context."})
+            
+        # Auto-populate fields from the resume instance.
+        validated_data["job_seeker_profile"] = resume.job_seeker_profile
+        validated_data["gender"] = resume.gender
+        validated_data["soldier_status"] = resume.soldier_status
+        validated_data["degree"] = resume.degree
+        validated_data["experience"] = resume.experience
+        validated_data["salary"] = resume.expected_salary
+        validated_data["industry"] = resume.industry
+        validated_data["location"] = resume.location
+        validated_data["resume"] = resume
+
+        # Auto-generate a slug, e.g., using the title or by falling back to resume data.
+        if not validated_data.get("slug"):
+            title = validated_data.get("title")
+            if title:
+                validated_data["slug"] = slugify(title)
+            else:
+                validated_data["slug"] = slugify(f"resume-ad-{resume.pk}")
+                
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        """
+        Forbid updates to fields that need to remain consistent with the resume.
+        Only allow updating fields such as 'title' and 'description', while forbidding
+        changes to any key fields auto-populated from the resume.
+        """
+        forbidden_fields = [
+            "job_seeker_profile",
+            "resume",
+            "industry",
+            "location",
+            "gender",
+            "soldier_status",
+            "degree",
+            "experience",
+            "salary",
+            "slug",
+        ]
+        for field in forbidden_fields:
+            if field in validated_data:
+                raise serializers.ValidationError({field: "You cannot change this field."})
+        return super().update(instance, validated_data)
 
 class ApplicationSerializer(serializers.ModelSerializer):
     # Nested serializers for related fields
