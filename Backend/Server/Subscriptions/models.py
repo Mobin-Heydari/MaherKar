@@ -7,10 +7,14 @@ class SubscriptionPlan(models.Model):
     """
     Represents a subscription plan (e.g., Basic, Premium).
     """
-    name = models.CharField(max_length=100, verbose_name="Plan Name")
+    name = models.CharField(max_length=100, verbose_name="Plan Name", unique=True)
+
     description = models.TextField(blank=True, verbose_name="Description")
+
     price_per_day = models.BigIntegerField(verbose_name="Price per Day")
+
     active = models.BooleanField(default=True, verbose_name="Active")
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
     
