@@ -14,7 +14,7 @@ class JobAdvertisementRouter(routers.DefaultRouter):
         custom_urls = [
             path('', include([
                 path('', JobAdvertisementViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<int:pk>/', include([
+                path('<slug:slug>/', include([
                     path('', JobAdvertisementViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
                 ])),
             ])),

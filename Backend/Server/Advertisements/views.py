@@ -17,14 +17,15 @@ class JobAdvertisementViewSet(viewsets.ModelViewSet):
     queryset = JobAdvertisement.objects.all()
     serializer_class = JobAdvertisementSerializer
     permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "slug"
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        queryset = get_object_or_404(self.get_queryset(), pk=pk)
+    def retrieve(self, request, slug=None, *args, **kwargs):
+        queryset = get_object_or_404(self.get_queryset(), slug=slug)
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
 
@@ -34,15 +35,15 @@ class JobAdvertisementViewSet(viewsets.ModelViewSet):
         serializer.save()  # Handles foreign key relationships in the serializer
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def update(self, request, pk=None, *args, **kwargs):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+    def update(self, request, slug=None, *args, **kwargs):
+        instance = get_object_or_404(self.get_queryset(), slug=slug)
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
-    def destroy(self, request, pk=None, *args, **kwargs):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+    def destroy(self, request, slug=None, *args, **kwargs):
+        instance = get_object_or_404(self.get_queryset(), slug=slug)
         instance.delete()
         return Response({"detail": "Advertisement deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 

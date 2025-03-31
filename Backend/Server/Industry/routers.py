@@ -9,12 +9,12 @@ from .views import IndustryViewSet, IndustryCategoryViewSet, SkillViewSet
 class IndustryCategoryRouter(DefaultRouter):
     def __init__(self):
         super().__init__()
-        self.register(r'industry-categories', IndustryCategoryViewSet, basename='industry-category')
+        self.register(r'', IndustryCategoryViewSet, basename='industry-category')
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('industry-categories/', include([
+            path('', include([
                 path('', IndustryCategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
                 path('<slug:slug>/', IndustryCategoryViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
             ])),
@@ -26,12 +26,12 @@ class IndustryCategoryRouter(DefaultRouter):
 class IndustryRouter(DefaultRouter):
     def __init__(self):
         super().__init__()
-        self.register(r'industries', IndustryViewSet, basename='industry')
+        self.register(r'', IndustryViewSet, basename='industry')
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('industries/', include([
+            path('', include([
                 path('', IndustryViewSet.as_view({'get': 'list', 'post': 'create'})),
                 path('<slug:slug>/', IndustryViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
             ])),
@@ -43,12 +43,12 @@ class IndustryRouter(DefaultRouter):
 class SkillRouter(DefaultRouter):
     def __init__(self):
         super().__init__()
-        self.register(r'skills', SkillViewSet, basename='skill')
+        self.register(r'', SkillViewSet, basename='skill')
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('skills/', include([
+            path('', include([
                 path('', SkillViewSet.as_view({'get': 'list', 'post': 'create'})),
                 path('<slug:slug>/', SkillViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
             ])),

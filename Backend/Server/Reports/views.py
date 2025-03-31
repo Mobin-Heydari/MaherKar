@@ -271,7 +271,7 @@ class SupportReportViewSet(viewsets.ModelViewSet):
             return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
 
-class AdvertisementReportViewSet(viewsets.ModelViewSet):
+class JobAdvertisementReportViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Advertisement reports.
     """
@@ -334,7 +334,7 @@ class AdvertisementReportViewSet(viewsets.ModelViewSet):
         return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
 
 
-class ResumeReportViewSet(viewsets.ModelViewSet):
+class ResumeAdvertisementReportViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Resume reports.
     """

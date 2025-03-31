@@ -1,7 +1,6 @@
 from django.db import models
 from Users.models import User
-from Advertisements.models import JobAdvertisement
-from Resumes.models import JobSeekerResume
+from Advertisements.models import JobAdvertisement, JobseekerResumeAdvertisement
 from Profiles.models import AdminProfile, SupportProfile, EmployerProfile, JobSeekerProfile
 
 
@@ -259,10 +258,10 @@ class ResumeReport(models.Model):
         verbose_name="وضعیت گزارش"
     )
 
-    resume = models.ForeignKey(
-        JobSeekerResume,
+    resume_advertisement = models.ForeignKey(
+        JobseekerResumeAdvertisement,
         on_delete=models.CASCADE,
-        related_name="reports_against_resume",
+        related_name="reports_against_resume_advertisement",
         verbose_name="رزومه گزارش شده"
     )
 

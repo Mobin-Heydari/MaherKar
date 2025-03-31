@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .models import SubscriptionPlan, Duration, JobAdvertisementSubscription, JobseekerResumeAdvertisementSubscription
 
 from Advertisements.models import JobAdvertisement, JobseekerResumeAdvertisement
+from Advertisements.serializers import JobAdvertisementSerializer, JobseekerResumeAdvertisementSerializer
 from Users.models import User
 
 
@@ -69,7 +70,7 @@ class DurationSerializer(serializers.ModelSerializer):
 
 
 class JobAdvertisementSubscriptionSerializer(serializers.ModelSerializer):
-    advertisement = serializers.PrimaryKeyRelatedField(queryset=JobAdvertisementSubscription.objects.all())
+    advertisement = JobAdvertisementSerializer()
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     plan = serializers.PrimaryKeyRelatedField(queryset=SubscriptionPlan.objects.filter(active=True))
     duration = serializers.PrimaryKeyRelatedField(queryset=Duration.objects.all())
@@ -136,7 +137,7 @@ class JobAdvertisementSubscriptionSerializer(serializers.ModelSerializer):
 
 
 class JobseekerResumeAdvertisementSubscriptionSerializer(serializers.ModelSerializer):
-    advertisement = serializers.PrimaryKeyRelatedField(queryset=JobseekerResumeAdvertisementSubscription.objects.all())
+    advertisement = JobseekerResumeAdvertisementSerializer()
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     plan = serializers.PrimaryKeyRelatedField(queryset=SubscriptionPlan.objects.filter(active=True))
     duration = serializers.PrimaryKeyRelatedField(queryset=Duration.objects.all())

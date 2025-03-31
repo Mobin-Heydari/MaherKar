@@ -13,5 +13,5 @@ router = CompanyRouter()
 
 # Define URL patterns
 urlpatterns = [
-    path('companies/', include(router.urls)),  # Include routes under the "companies/" base path
+    path('', include(router.urls)),
 ]
