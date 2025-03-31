@@ -1,0 +1,24 @@
+from django.urls import path
+from .routers import (
+    SubscriptionPlanRouter,
+    DurationRouter,
+    JobAdvertisementSubscriptionRouter,
+    JobseekerResumeAdvertisementSubscriptionRouter,
+)
+
+
+app_name = "Subscriptions"
+
+subscription_plan_router = SubscriptionPlanRouter()
+duration_router = DurationRouter()
+job_ad_subscription_router = JobAdvertisementSubscriptionRouter()
+resume_ad_subscription_router = JobseekerResumeAdvertisementSubscriptionRouter()
+
+
+
+urlpatterns = (
+    subscription_plan_router.get_urls() +
+    duration_router.get_urls() +
+    job_ad_subscription_router.get_urls() +
+    resume_ad_subscription_router.get_urls()
+)
