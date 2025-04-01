@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'Advertisements.apps.AdvertisementsConfig',
     'Subscriptions.apps.SubscriptionsConfig',
     'Reports.apps.ReportsConfig',
+    'Payments.apps.PaymentsConfig',
 ]
 
 MIDDLEWARE = [
