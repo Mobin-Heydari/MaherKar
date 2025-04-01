@@ -16,4 +16,5 @@ urlpatterns = [
     path('ads/', include('Advertisements.urls', namespace='Advertisements')),
     path('reports/', include('Reports.urls', namespace='Reports')),
     path('subscriptions/', include('Subscriptions.urls', namespace='Subscriptions')),
+    path('locations/', include('Locations.urls', namespace='Locations')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
