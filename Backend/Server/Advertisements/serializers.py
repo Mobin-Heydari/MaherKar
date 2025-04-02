@@ -3,22 +3,24 @@ from rest_framework import serializers
 from .models import Advertisement, JobAdvertisement, Application, ResumeAdvertisement
 
 from Companies.models import Company
+from Profiles.models import EmployerProfile, JobSeekerProfile
+from Resumes.models import JobSeekerResume
+
 from Companies.serializers import CompanySerializer
 from Industry.serializers import IndustrySerializer
 from Locations.serializers import CitySerializer
 from Subscriptions.serializers import AdvertisementSubscription
-from Profiles.models import EmployerProfile, JobSeekerProfile
-from Resumes.models import JobSeekerResume
-
 from Profiles.serializers import JobSeekerProfileSerializer, EmployerProfileSerializer
 from Resumes.serializers import JobSeekerResumeSerializer
+from Users.serializers import UserSerializer
 
 
 
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):
-    
+
+    owner = UserSerializer()
     industry = IndustrySerializer()
     location = CitySerializer()
     subscription = AdvertisementSubscription()
@@ -31,11 +33,11 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertisement
         fields = [
-            'id', 'industry', 'subscription', 'location', 'title', 'slug',
+            'id', 'owner', 'industry', 'subscription', 'location', 'title', 'slug',
             'advertise_code', 'description', 'status', 'gender',
             'soldier_status', 'degree', 'salary', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'advertise_code', 'slug', 'created_at', 'updated_at', 'subscription', 'status']
+        read_only_fields = ['id', 'advertise_code', 'slug', 'created_at', 'updated_at', 'subscription', 'status', 'owner']
     
 
     def update(self, instance, validated_data):
@@ -63,6 +65,7 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'company', 'employer']
 
     def create(self, validated_data):
+        request = self.context.get('request')
         employer_profile_id = self.context.get("employer_profile_id")
 
         # Retrieve and validate the company
@@ -80,7 +83,10 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
 
         # Retrieve and validate nested advertisement data
         advertisement_data = validated_data.pop("advertisement")
-        advertisement = Advertisement.objects.create(**advertisement_data)
+        advertisement = Advertisement.objects.create(
+            owner=request.user,
+            **advertisement_data
+        )
 
         # Create the job advertisement
         job_advertisement = JobAdvertisement.objects.create(
@@ -126,7 +132,7 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-
+        request = self.context.get('request')
         jobseeker_profile_id = self.context.get('jobseeker_profile_id')
 
         try:
@@ -142,7 +148,10 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
 
         # Retrieve and validate nested advertisement data
         advertisement_data = validated_data.pop("advertisement")
-        advertisement = Advertisement.objects.create(**advertisement_data)
+        advertisement = Advertisement.objects.create(
+            owner=request.user,
+            **advertisement_data
+        )
 
         # Create the resume advertisement
         resume_advertisement = ResumeAdvertisement.objects.create(
