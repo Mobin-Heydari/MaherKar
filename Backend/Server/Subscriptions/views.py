@@ -2,18 +2,8 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import (
-    SubscriptionPlan,
-    Duration,
-    JobAdvertisementSubscription,
-    JobseekerResumeAdvertisementSubscription
-)
-from .serializers import (
-    SubscriptionPlanSerializer,
-    DurationSerializer,
-    JobAdvertisementSubscriptionSerializer,
-    JobseekerResumeAdvertisementSubscriptionSerializer
-)
+from .models import SubscriptionPlan, AdvertisementSubscription
+from .serializers import SubscriptionPlanSerializer, AdvertisementSubscriptionSerializer
 
 
 
@@ -78,69 +68,7 @@ class SubscriptionPlanViewSet(ViewSet):
                         status=status.HTTP_204_NO_CONTENT)
 
 
-class DurationViewSet(ViewSet):
-    """
-    ViewSet for managing Durations.
-    """
-    def list(self, request):
-        queryset = Duration.objects.all()
-        serializer = DurationSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, pk=None):
-        duration = get_object_or_404(Duration, pk=pk)
-        serializer = DurationSerializer(duration)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def create(self, request):
-        """
-        Create a new Duration (admin-only).
-        """
-        if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        serializer = DurationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        duration = serializer.save()
-        return Response(
-            DurationSerializer(duration).data,
-            status=status.HTTP_201_CREATED
-        )
-
-    def update(self, request, pk=None):
-        """
-        Update an existing Duration (admin-only).
-        """
-        if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        duration = get_object_or_404(Duration, pk=pk)
-        serializer = DurationSerializer(duration, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        updated_duration = serializer.save()
-        return Response(
-            DurationSerializer(updated_duration).data,
-            status=status.HTTP_200_OK
-        )
-
-    def destroy(self, request, pk=None):
-        """
-        Delete a Duration (admin-only).
-        """
-        if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        duration = get_object_or_404(Duration, pk=pk)
-        duration.delete()
-        return Response({"detail": "Duration deleted successfully."},
-                        status=status.HTTP_204_NO_CONTENT)
-
-
-
-class JobAdvertisementSubscriptionViewSet(ViewSet):
+class AdvertisementSubscriptionViewSet(ViewSet):
     """
     ViewSet for managing Job Advertisement Subscriptions.
     """
@@ -149,16 +77,16 @@ class JobAdvertisementSubscriptionViewSet(ViewSet):
         """
         Retrieve a list of all Job Advertisement Subscriptions.
         """
-        queryset = JobAdvertisementSubscription.objects.all()
-        serializer = JobAdvertisementSubscriptionSerializer(queryset, many=True)
+        queryset = AdvertisementSubscription.objects.all()
+        serializer = AdvertisementSubscriptionSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         """
         Retrieve a specific Job Advertisement Subscription by its ID.
         """
-        subscription = get_object_or_404(JobAdvertisementSubscription, pk=pk)
-        serializer = JobAdvertisementSubscriptionSerializer(subscription)
+        subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
+        serializer = AdvertisementSubscriptionSerializer(subscription)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
@@ -168,14 +96,14 @@ class JobAdvertisementSubscriptionViewSet(ViewSet):
         advertisement_slug = request.data.get('advertisement_slug')
         username = request.user.username  # Assuming the user is authenticated
 
-        serializer = JobAdvertisementSubscriptionSerializer(
+        serializer = AdvertisementSubscriptionSerializer(
             data=request.data,
             context={'advertisement_slug': advertisement_slug, 'username': username}
         )
         serializer.is_valid(raise_exception=True)
         subscription = serializer.save()
         return Response(
-            JobAdvertisementSubscriptionSerializer(subscription).data,
+            AdvertisementSubscriptionSerializer(subscription).data,
             status=status.HTTP_201_CREATED
         )
 
@@ -184,15 +112,15 @@ class JobAdvertisementSubscriptionViewSet(ViewSet):
         Update an existing Job Advertisement Subscription instance.
         Only allows updates to allowed fields.
         """
-        subscription = get_object_or_404(JobAdvertisementSubscription, pk=pk)
+        subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
 
-        serializer = JobAdvertisementSubscriptionSerializer(
+        serializer = AdvertisementSubscriptionSerializer(
             subscription, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
         updated_subscription = serializer.save()
         return Response(
-            JobAdvertisementSubscriptionSerializer(updated_subscription).data,
+            AdvertisementSubscriptionSerializer(updated_subscription).data,
             status=status.HTTP_200_OK
         )
 
@@ -200,73 +128,9 @@ class JobAdvertisementSubscriptionViewSet(ViewSet):
         """
         Delete a Job Advertisement Subscription instance.
         """
-        subscription = get_object_or_404(JobAdvertisementSubscription, pk=pk)
+        subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
         subscription.delete()
         return Response(
             {"detail": "Subscription deleted successfully."},
             status=status.HTTP_204_NO_CONTENT
         )
-
-
-
-class JobseekerResumeAdvertisementSubscriptionViewSet(ViewSet):
-    """
-    ViewSet for managing Jobseeker Resume Advertisement Subscriptions.
-    """
-
-    def list(self, request):
-        queryset = JobseekerResumeAdvertisementSubscription.objects.all()
-        serializer = JobseekerResumeAdvertisementSubscriptionSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, pk=None):
-        subscription = get_object_or_404(JobseekerResumeAdvertisementSubscription, pk=pk)
-        serializer = JobseekerResumeAdvertisementSubscriptionSerializer(subscription)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def create(self, request):
-        """
-        Create a JobseekerResumeAdvertisementSubscription instance using context data.
-        """
-        advertisement_slug = request.data.get('advertisement_slug')
-        username = request.user.username  # Assuming the user is authenticated
-
-        serializer = JobseekerResumeAdvertisementSubscriptionSerializer(
-            data=request.data,
-            context={'advertisement_slug': advertisement_slug, 'username': username}
-        )
-        serializer.is_valid(raise_exception=True)
-        subscription = serializer.save()
-        return Response(
-            JobseekerResumeAdvertisementSubscriptionSerializer(subscription).data,
-            status=status.HTTP_201_CREATED
-        )
-
-    def update(self, request, pk=None):
-        """
-        Update an existing JobseekerResumeAdvertisementSubscription instance.
-        Only allows updates to fields that are not forbidden.
-        """
-        subscription = get_object_or_404(JobseekerResumeAdvertisementSubscription, pk=pk)
-
-        serializer = JobseekerResumeAdvertisementSubscriptionSerializer(
-            subscription, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        updated_subscription = serializer.save()
-        return Response(
-            JobseekerResumeAdvertisementSubscriptionSerializer(updated_subscription).data,
-            status=status.HTTP_200_OK
-        )
-
-    def destroy(self, request, pk=None):
-        """
-        Delete a JobseekerResumeAdvertisementSubscription instance.
-        """
-        subscription = get_object_or_404(JobseekerResumeAdvertisementSubscription, pk=pk)
-        subscription.delete()
-        return Response(
-            {"detail": "Subscription deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
-        )
-

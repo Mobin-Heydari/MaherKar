@@ -6,7 +6,6 @@ from .models import (
     AdminReport,
     SupportReport,
     AdvertisementReport,
-    ResumeReport,
 )
 
 
@@ -202,36 +201,3 @@ class AdvertisementReportSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ResumeReportSerializer(serializers.ModelSerializer):
-    """
-    Serializer for ResumeReport.
-    """
-    reporter_username = serializers.ReadOnlyField(source='reporter.username')
-
-    class Meta:
-        model = ResumeReport
-        fields = [
-            'id',
-            'status',
-            'resume',
-            'reporter',
-            'reporter_username',
-            'category',
-            'description',
-            'created_at',
-        ]
-
-    def create(self, validated_data):
-        """
-        Custom creation logic for ResumeReport.
-        """
-        return ResumeReport.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        """
-        Custom update logic for ResumeReport.
-        """
-        instance.status = validated_data.get('status', instance.status)
-        instance.description = validated_data.get('description', instance.description)
-        instance.save()
-        return instance

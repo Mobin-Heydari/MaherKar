@@ -7,16 +7,14 @@ from .models import (
     EmployerReport,
     AdminReport,
     SupportReport,
-    AdvertisementReport,
-    ResumeReport
+    AdvertisementReport
 )
 from .serializers import (
     JobSeekerReportSerializer,
     EmployerReportSerializer,
     AdminReportSerializer,
     SupportReportSerializer,
-    AdvertisementReportSerializer,
-    ResumeReportSerializer
+    AdvertisementReportSerializer
 )
 
 
@@ -326,69 +324,6 @@ class JobAdvertisementReportViewSet(viewsets.ModelViewSet):
     def destroy(self, request, id=None, *args, **kwargs):
         """
         Delete an Advertisement report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            report.delete()
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-
-class ResumeAdvertisementReportViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing Resume reports.
-    """
-    queryset = ResumeReport.objects.all()
-    serializer_class = ResumeReportSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-
-    def list(self, request, *args, **kwargs):
-        """
-        List all Resume reports. Only accessible by admin users.
-        """
-        if request.user.is_staff:
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def retrieve(self, request, id=None, *args, **kwargs):
-        """
-        Retrieve a specific Resume report. Accessible by admin, reporter, or the resume owner.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter or request.user == report.resume.user:
-            serializer = self.get_serializer(report)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new Resume report.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(reporter=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, id=None, *args, **kwargs):
-        """
-        Update an existing Resume report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def destroy(self, request, id=None, *args, **kwargs):
-        """
-        Delete a Resume report. Only admin or the reporter can perform this action.
         """
         report = get_object_or_404(self.get_queryset(), id=id)
         if request.user.is_staff or request.user == report.reporter:

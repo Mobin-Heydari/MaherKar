@@ -5,7 +5,6 @@ from .routers import (
     AdminReportRouter,
     SupportReportRouter,
     JobAdvertisementReportRouter,
-    ResumeAdvertisementReportRouter,
 )
 
 
@@ -18,7 +17,6 @@ employer_router = EmployerReportRouter()
 admin_router = AdminReportRouter()
 support_router = SupportReportRouter()
 job_advertisement_router = JobAdvertisementReportRouter()
-resume_advertisement_router = ResumeAdvertisementReportRouter()
 
 
 urlpatterns = [
@@ -27,5 +25,4 @@ urlpatterns = [
     path('admin/', include(admin_router.get_urls())),
     path('support/', include(support_router.get_urls())),
     path('job-advertisement/', include(job_advertisement_router.get_urls())),
-    path('resume-advertisement/', include(resume_advertisement_router.get_urls())),
 ]

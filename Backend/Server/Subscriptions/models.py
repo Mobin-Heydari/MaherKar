@@ -1,183 +1,109 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
+
+
 
 
 class SubscriptionPlan(models.Model):
     """
-    Represents a subscription plan (e.g., Basic, Premium).
+    مدل مربوط به طرح‌های اشتراک (مانند: پایه، پیشرفته).
     """
-    name = models.CharField(max_length=100, verbose_name="Plan Name", unique=True)
 
-    description = models.TextField(blank=True, verbose_name="Description")
+    name = models.CharField(max_length=100, verbose_name="نام طرح", unique=True)
 
-    price_per_day = models.BigIntegerField(verbose_name="Price per Day")
+    description = models.TextField(blank=True, verbose_name="توضیحات")
 
-    active = models.BooleanField(default=True, verbose_name="Active")
+    price_per_day = models.BigIntegerField(verbose_name="قیمت روزانه")
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
-    
+    active = models.BooleanField(default=True, verbose_name="فعال")
+    is_free = models.BooleanField(default=False, verbose_name="رایگانه؟")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
+
     def __str__(self):
         return self.name
 
 
-class Duration(models.Model):
-    """
-    Represents the duration of a subscription plan.
-    """
-    plan = models.ForeignKey(
-        SubscriptionPlan,
-        on_delete=models.CASCADE,
-        related_name="durations",
-        verbose_name="Plan"
-    )
-    day = models.IntegerField(default=30, verbose_name="Days")
 
-    class Meta:
-        verbose_name = "Duration"
-        verbose_name_plural = "Durations"
-    
-    def __str__(self):
-        return f"{self.day} Days for {self.plan.name}"
-
-
-class JobAdvertisementSubscription(models.Model):
+class AdvertisementSubscription(models.Model):
     """
-    Subscription linked to a JobAdvertisement model instance.
+    مدل اشتراک برای آگهی‌ها.
     """
+
     class PaymentStatus(models.TextChoices):
-        PENDING = 'pending', "Pending"
-        ACTIVE = 'active', "Active"
-        EXPIRED = 'expired', "Expired"
-        CANCELED = 'canceled', "Canceled"
-        FAILED = 'failed', "Failed"
+        PENDING = 'pending', "در انتظار"
+        PAID = 'paid', "پرداخت شده"
+        CANCELED = 'canceled', "لغو شده"
+        FAILED = 'failed', "ناموفق"
 
-
-    advertisement = models.ForeignKey(
-        'Advertisement.JobAdvertisement',
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="Job Advertisement"
-    )
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="User"
-    )
-
-    plan = models.ForeignKey(
-        SubscriptionPlan,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="Plan"
-    )
-
-    duration = models.ForeignKey(
-        Duration,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="Duration"
-    )
+    class SubscriptionStatus(models.TextChoices):
+        DEFAULT = 'default', "پیش‌فرض"
+        SPECIAL = 'special', "خاص"
 
     payment_status = models.CharField(
         max_length=20,
         choices=PaymentStatus.choices,
         default=PaymentStatus.PENDING,
-        verbose_name="Payment Status"
+        verbose_name="وضعیت پرداخت"
     )
 
-    start_date = models.DateTimeField(default=timezone.now, verbose_name="Start Date")
-
-    end_date = models.DateTimeField(verbose_name="End Date")
-
-    last_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="Last Payment Date")
-    next_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="Next Payment Date")
-    
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
-    
-    class Meta:
-        abstract = True
-
-    def is_active(self):
-        """
-        Check if the subscription is active based on payment status and expiration date.
-        """
-        return self.payment_status == self.PaymentStatus.ACTIVE and timezone.now() < self.end_date
-    
-    def __str__(self):
-        return f"Job Ad Subscription for {self.advertisement.title}"
-
-
-class JobseekerResumeAdvertisementSubscription(models.Model):
-    """
-    Subscription linked to a JobseekerResumeAdvertisement model instance.
-    """
-
-    class PaymentStatus(models.TextChoices):
-        PENDING = 'pending', "Pending"
-        ACTIVE = 'active', "Active"
-        EXPIRED = 'expired', "Expired"
-        CANCELED = 'canceled', "Canceled"
-        FAILED = 'failed', "Failed"
-
-
-    advertisement = models.ForeignKey(
-        'Advertisement.JobseekerResumeAdvertisement',
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="Job Seeker Advertisement"
-    )
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="User"
+    subscription_status = models.CharField(
+        max_length=30,
+        choices=SubscriptionStatus.choices,
+        default=SubscriptionStatus.DEFAULT,
+        verbose_name="وضعیت اشتراک"
     )
 
     plan = models.ForeignKey(
-        SubscriptionPlan,
-        on_delete=models.CASCADE,
+        'SubscriptionPlan',
+        on_delete=models.SET_NULL,
         related_name="subscriptions",
-        verbose_name="Plan"
+        verbose_name="طرح اشتراک",
+        null=True,
+        blank=True
     )
 
-    duration = models.ForeignKey(
-        Duration,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name="Duration"
-    )
+    duration = models.IntegerField(default=1, verbose_name="مدت زمان (روز)")
 
-    payment_status = models.CharField(
-        max_length=20,
-        choices=PaymentStatus.choices,
-        default=PaymentStatus.PENDING,
-        verbose_name="Payment Status"
-    )
+    start_date = models.DateTimeField(default=timezone.now, verbose_name="تاریخ شروع")
 
-    start_date = models.DateTimeField(default=timezone.now, verbose_name="Start Date")
-
-    end_date = models.DateTimeField(verbose_name="End Date")
-
-    last_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="Last Payment Date")
-    next_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="Next Payment Date")
+    end_date = models.DateTimeField(verbose_name="تاریخ پایان")
     
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+    last_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="آخرین پرداخت")
+
+    next_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="پرداخت بعدی")
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
+
     class Meta:
-        abstract = True
+        verbose_name = "اشتراک آکهی"
+        verbose_name_plural = "اشتراک های آگهی"
+
 
     def is_active(self):
         """
-        Check if the subscription is active based on payment status and expiration date.
+        بررسی وضعیت فعال بودن اشتراک بر اساس پرداخت و تاریخ انقضا.
         """
-        return self.payment_status == self.PaymentStatus.ACTIVE and timezone.now() < self.end_date
-    
+        return self.payment_status == self.PaymentStatus.PAID and timezone.now() < self.end_date
+
+    def manage_subscription(self):
+        """
+        Function to manage subscription status.
+        """
+        if self.subscription_status == self.SubscriptionStatus.SPECIAL:
+            # Adjust subscription status if payment failed or subscription is inactive
+            if self.payment_status == self.PaymentStatus.FAILED or not self.is_active():
+                self.subscription_status = self.SubscriptionStatus.DEFAULT
+                self.save(update_fields=["subscription_status"])  # Save only the subscription status change
+
+        # Automatically calculate end_date if not set
+        if not self.end_date and self.duration:
+            self.end_date = self.start_date + timezone.timedelta(days=self.duration)
+            self.save(update_fields=["end_date"])  # Save only the end_date change
+
     def __str__(self):
-        return f"Job Seeker Ad Subscription for {self.advertisement.title}"
+        return f"اشتراک آگهی برای {self.plan.name}"
+

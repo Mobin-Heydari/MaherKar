@@ -1,6 +1,6 @@
 from django.db import models
 from Users.models import User
-from Advertisements.models import JobAdvertisement, JobseekerResumeAdvertisement
+from Advertisements.models import Advertisement
 from Profiles.models import AdminProfile, SupportProfile, EmployerProfile, JobSeekerProfile
 
 
@@ -215,8 +215,8 @@ class AdvertisementReport(models.Model):
         verbose_name="وضعیت گزارش"
     )
 
-    job_advertisement = models.ForeignKey(
-        JobAdvertisement,
+    advertisement = models.ForeignKey(
+        Advertisement,
         on_delete=models.CASCADE,
         related_name="reports_against_joqb_advertisement",
         verbose_name="آگهی گزارش شده"
@@ -240,47 +240,3 @@ class AdvertisementReport(models.Model):
 
     def __str__(self):
         return f"Report for Advertisement ID: {self.advertisement.id}"
-
-
-class ResumeReport(models.Model):
-    """
-    Model for reporting resumes.
-    """
-    class ReportStatus(models.TextChoices):
-        PENDING = "P", "در انتظار"
-        RESOLVED = "R", "حل شده"
-        REJECTED = "RJ", "رد شده"
-
-    status = models.CharField(
-        max_length=2,
-        choices=ReportStatus.choices,
-        default=ReportStatus.PENDING,
-        verbose_name="وضعیت گزارش"
-    )
-
-    resume_advertisement = models.ForeignKey(
-        JobseekerResumeAdvertisement,
-        on_delete=models.CASCADE,
-        related_name="reports_against_resume_advertisement",
-        verbose_name="رزومه گزارش شده"
-    )
-
-    reporter = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="resume_reports",
-        verbose_name="گزارش‌دهنده"
-    )
-
-    category = models.ForeignKey(
-        ReportCategory,
-        on_delete=models.CASCADE,
-        verbose_name="دسته‌بندی گزارش"
-    )
-
-    description = models.TextField(blank=True, verbose_name="توضیحات گزارش")
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
-
-    def __str__(self):
-        return f"Report for Resume ID: {self.resume.id}"
