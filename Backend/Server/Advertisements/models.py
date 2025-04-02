@@ -1,9 +1,9 @@
 from django.db import models
 
-
 from Companies.models import Company
 from Industry.models import Industry
 from Locations.models import City
+from Users.models import User
 from Profiles.models import JobSeekerProfile, EmployerProfile
 from Resumes.models import JobSeekerResume
 from Subscriptions.models import AdvertisementSubscription
@@ -56,6 +56,13 @@ class Advertisement(models.Model):
         on_delete=models.CASCADE,
         related_name="Advertisements_Industry",
         verbose_name="صنعت"
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="Advertisement_Owner",
+        verbose_name="مالک"
     )
 
     subscription = models.OneToOneField(
