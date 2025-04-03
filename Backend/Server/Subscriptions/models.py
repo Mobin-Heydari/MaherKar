@@ -56,10 +56,6 @@ class AdvertisementSubscription(models.Model):
     start_date = models.DateTimeField(default=timezone.now, verbose_name="تاریخ شروع")
 
     end_date = models.DateTimeField(verbose_name="تاریخ پایان")
-    
-    last_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="آخرین پرداخت")
-
-    next_payment_date = models.DateTimeField(null=True, blank=True, verbose_name="پرداخت بعدی")
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     
