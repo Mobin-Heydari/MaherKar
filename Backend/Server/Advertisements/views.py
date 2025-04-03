@@ -4,9 +4,40 @@ from rest_framework.response import Response
 from rest_framework.generics import get_object_or_404
 
 from .models import Advertisement, Application
-from .serializers import ApplicationSerializer
+from .serializers import AdvertisementSerializer, ApplicationSerializer
 
-from Resumes.models import JobSeekerResume
+
+
+
+class AdvertisementViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        queryset = Advertisement.objects.all()
+        serializer = AdvertisementSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def retrieve(self, request, slug):
+        query = get_object_or_404(Advertisement, slug=slug)
+        serializer = AdvertisementSerializer(query)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def update(self, request, slug):
+        query = get_object_or_404(Advertisement, slug=slug)
+        serializer = AdvertisementSerializer(query, data=request.data, partial=True)
+        if request.user == query.owner or request.user.is_staff:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        'Message': "Advertisemenet updated.",
+                        "Data": serializer.data
+                    }, 
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"Massage": "You dont have permission"}, status=status.HTTP_403_FORBIDDEN)
 
 
 
