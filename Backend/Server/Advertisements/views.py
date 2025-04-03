@@ -3,8 +3,8 @@ from rest_framework.response import Response
 
 from rest_framework.generics import get_object_or_404
 
-from .models import Advertisement, Application
-from .serializers import AdvertisementSerializer, ApplicationSerializer
+from .models import Advertisement, JobAdvertisement, Application
+from .serializers import AdvertisementSerializer, JobAdvertisementSerializer, ApplicationSerializer
 
 
 
@@ -38,7 +38,54 @@ class AdvertisementViewSet(viewsets.ViewSet):
                 return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "You dont have permission"}, status=status.HTTP_403_FORBIDDEN)
+        
 
+class JobAdvertisementViewSet(viewsets.ViewSet):
+    
+    def list(self, request):
+        queryset = JobAdvertisement.objects.all()
+        serializer = JobAdvertisementSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def retrieve(self, request, slug):
+        query = get_object_or_404(JobAdvertisement, advertisement__slug=slug)
+        serializer = JobAdvertisementSerializer(query)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def create(self, request, slug):
+        serializer = JobAdvertisementSerializer(data=request.data, context={'company_slug': slug, 'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"Massage": "Job created."}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk):
+        query = get_object_or_404(JobAdvertisement, id=pk)
+        if query.advertisement.owner == request.user or request.user.is_staff:
+            serializer = JobAdvertisementSerializer(query, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {
+                        "Massage": "Job ad updated.",
+                        "data": serializer.data
+                    }, status=status.HTTP_200_OK
+                )
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
+    
+    def destroy(self, request, pk, slug):
+        main_ad = get_object_or_404(Advertisement, slug=slug)
+        query = get_object_or_404(JobAdvertisement, id=pk, advertisement=main_ad)
+        if query.advertisement.owner == request.user or request.user.is_staff:
+            main_ad.delete()
+            query.delete()
+            return Response({"Massage": "The advertisement deleted."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
