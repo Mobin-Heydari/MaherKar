@@ -26,8 +26,7 @@ class SubscriptionPlanViewSet(ViewSet):
         Create a new Subscription Plan (admin-only).
         """
         if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = SubscriptionPlanSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -42,8 +41,7 @@ class SubscriptionPlanViewSet(ViewSet):
         Update an existing Subscription Plan (admin-only).
         """
         if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         subscription_plan = get_object_or_404(SubscriptionPlan, pk=pk)
         serializer = SubscriptionPlanSerializer(subscription_plan, data=request.data, partial=True)
@@ -59,13 +57,11 @@ class SubscriptionPlanViewSet(ViewSet):
         Delete a Subscription Plan (admin-only).
         """
         if not request.user.is_staff:  # Check if the user is an admin
-            return Response({"detail": "You do not have permission to perform this action."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
 
         subscription_plan = get_object_or_404(SubscriptionPlan, pk=pk)
         subscription_plan.delete()
-        return Response({"detail": "Subscription Plan deleted successfully."},
-                        status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Subscription Plan deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class AdvertisementSubscriptionViewSet(ViewSet):
@@ -88,49 +84,3 @@ class AdvertisementSubscriptionViewSet(ViewSet):
         subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
         serializer = AdvertisementSubscriptionSerializer(subscription)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def create(self, request):
-        """
-        Create a Job Advertisement Subscription using context data.
-        """
-        advertisement_slug = request.data.get('advertisement_slug')
-        username = request.user.username  # Assuming the user is authenticated
-
-        serializer = AdvertisementSubscriptionSerializer(
-            data=request.data,
-            context={'advertisement_slug': advertisement_slug, 'username': username}
-        )
-        serializer.is_valid(raise_exception=True)
-        subscription = serializer.save()
-        return Response(
-            AdvertisementSubscriptionSerializer(subscription).data,
-            status=status.HTTP_201_CREATED
-        )
-
-    def update(self, request, pk=None):
-        """
-        Update an existing Job Advertisement Subscription instance.
-        Only allows updates to allowed fields.
-        """
-        subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
-
-        serializer = AdvertisementSubscriptionSerializer(
-            subscription, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        updated_subscription = serializer.save()
-        return Response(
-            AdvertisementSubscriptionSerializer(updated_subscription).data,
-            status=status.HTTP_200_OK
-        )
-
-    def destroy(self, request, pk=None):
-        """
-        Delete a Job Advertisement Subscription instance.
-        """
-        subscription = get_object_or_404(AdvertisementSubscription, pk=pk)
-        subscription.delete()
-        return Response(
-            {"detail": "Subscription deleted successfully."},
-            status=status.HTTP_204_NO_CONTENT
-        )

@@ -30,8 +30,8 @@ class AdvertisementSubscriptionRouter(DefaultRouter):
         urls = super().get_urls()
         custom_urls = [
             path('', include([
-                path('', AdvertisementSubscriptionViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<int:pk>/', AdvertisementSubscriptionViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+                path('', AdvertisementSubscriptionViewSet.as_view({'get': 'list'})),
+                path('<int:pk>/', AdvertisementSubscriptionViewSet.as_view({'get': 'retrieve'})),
             ])),
         ]
         return urls + custom_urls
