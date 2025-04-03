@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'Subscriptions.apps.SubscriptionsConfig',
     'Reports.apps.ReportsConfig',
     'Payments.apps.PaymentsConfig',
+    'Orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
