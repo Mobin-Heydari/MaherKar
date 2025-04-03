@@ -31,22 +31,9 @@ class AdvertisementSubscription(models.Model):
     مدل اشتراک برای آگهی‌ها.
     """
 
-    class PaymentStatus(models.TextChoices):
-        PENDING = 'pending', "در انتظار"
-        PAID = 'paid', "پرداخت شده"
-        CANCELED = 'canceled', "لغو شده"
-        FAILED = 'failed', "ناموفق"
-
     class SubscriptionStatus(models.TextChoices):
         DEFAULT = 'default', "پیش‌فرض"
         SPECIAL = 'special', "خاص"
-
-    payment_status = models.CharField(
-        max_length=20,
-        choices=PaymentStatus.choices,
-        default=PaymentStatus.PENDING,
-        verbose_name="وضعیت پرداخت"
-    )
 
     subscription_status = models.CharField(
         max_length=30,
@@ -89,20 +76,6 @@ class AdvertisementSubscription(models.Model):
         """
         return self.payment_status == self.PaymentStatus.PAID and timezone.now() < self.end_date
 
-    def manage_subscription(self):
-        """
-        Function to manage subscription status.
-        """
-        if self.subscription_status == self.SubscriptionStatus.SPECIAL:
-            # Adjust subscription status if payment failed or subscription is inactive
-            if self.payment_status == self.PaymentStatus.FAILED or not self.is_active():
-                self.subscription_status = self.SubscriptionStatus.DEFAULT
-                self.save(update_fields=["subscription_status"])  # Save only the subscription status change
-
-        # Automatically calculate end_date if not set
-        if not self.end_date and self.duration:
-            self.end_date = self.start_date + timezone.timedelta(days=self.duration)
-            self.save(update_fields=["end_date"])  # Save only the end_date change
 
     def __str__(self):
         return f"اشتراک آگهی برای {self.plan.name}"

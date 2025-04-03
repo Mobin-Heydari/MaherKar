@@ -47,6 +47,9 @@ class SubscriptionOrder(models.Model):
         verbose_name="وضعیت پرداخت"
     )
 
+    durations = models.IntegerField(verbose_name="مدت زمان اشتراک", default=1)
+
+    price = models.IntegerField(verbose_name="قیمت", default=0)
     total_price = models.IntegerField(verbose_name="قیمت نهایی")
 
     order_id = models.UUIDField(verbose_name="آیدی", primary_key=True, default=uuid.uuid5)
