@@ -52,7 +52,7 @@ class SubscriptionOrder(models.Model):
     price = models.IntegerField(verbose_name="قیمت", default=0)
     total_price = models.IntegerField(verbose_name="قیمت نهایی")
 
-    order_id = models.UUIDField(verbose_name="آیدی", primary_key=True, default=uuid.uuid5)
+    order_id = models.UUIDField(verbose_name="آیدی", primary_key=True, default=uuid.uuid4)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
