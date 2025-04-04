@@ -32,7 +32,7 @@ class AdvertisementSubscription(models.Model):
     """
 
     class SubscriptionStatus(models.TextChoices):
-        DEFAULT = 'default', "پیش‌فرض"
+        DEFAULT = 'default', "پیش‌ فرض"
         SPECIAL = 'special', "خاص"
 
     subscription_status = models.CharField(
@@ -43,7 +43,7 @@ class AdvertisementSubscription(models.Model):
     )
 
     plan = models.ForeignKey(
-        'SubscriptionPlan',
+        SubscriptionPlan,
         on_delete=models.SET_NULL,
         related_name="subscriptions",
         verbose_name="طرح اشتراک",
