@@ -4,7 +4,7 @@ from .managers import UserManager
 
 
 
-class IdCardInformation(models.Model):
+class IdCardInFormation(models.Model):
     class IdCardStatus(models.TextChoices):
         PENDING = 'P', 'در انتظار تایید'
         VERIFIED = 'V', 'تایید شده'
@@ -18,7 +18,7 @@ class IdCardInformation(models.Model):
     )
 
     id_card = models.FileField(
-        upload_to='jobseekers/id_cards/',
+        upload_to='Users/id_cards/',
         verbose_name="کارت ملی",
         help_text="بارگذاری تصویر/اسکن کارت ملی",
         blank=True,
@@ -65,10 +65,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     id_card_info = models.OneToOneField(
-        IdCardInformation,
-        on_delete=models.CASCADE,
+        IdCardInFormation,
+        on_delete=models.SET_NULL,
         verbose_name="اطلاعات کارت ملی",
-        related_name="id_card_info"
+        related_name="id_card_info",
+        null=True,
+        blank=True
     )
 
     # وضعیت حساب: وضعیت کلی حساب کاربر (فعال، تعلیق شده یا حذف شده)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, IdCardInformation
+from .models import User, IdCardInFormation
 
 
 
@@ -9,7 +9,7 @@ class IdCardInformationSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        model = IdCardInformation
+        model = IdCardInFormation
         fields = "__all__"
 
     def update(self, instance, validated_data):
@@ -47,12 +47,8 @@ class UserSerializer(serializers.ModelSerializer):
             'status',                    # وضعیت حساب کاربری
             'joined_date',               # تاریخ عضویت
             'last_updated',              # تاریخ آخرین به‌روزرسانی حساب
-            'password',                  # رمز عبور
         ]
         read_only_fields = ['id', 'joined_date', 'last_updated', 'id_card_info']
-        extra_kwargs = {
-            'password': {'write_only': True},
-        }
     
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)

@@ -1,9 +1,5 @@
 from django.contrib.auth.models import BaseUserManager
 
-# from django.apps import apps
-
-# IdCardInformation = apps.get_model('Users', 'IdCardInformation')
-
 
 
 class UserManager(BaseUserManager):
@@ -23,8 +19,6 @@ class UserManager(BaseUserManager):
             raise ValueError("شماره تلفن باید وارد شود")
         
         email = self.normalize_email(email)
-
-        # id_cart = IdCardInformation.objects.create()
         
         # ایجاد نمونه‌ای از مدل کاربر با فیلدهای اضافی در صورت نیاز
         user = self.model(
@@ -33,7 +27,6 @@ class UserManager(BaseUserManager):
             email=email,
             user_type=user_type,
             full_name=full_name,
-            # id_cart_info=id_cart,
             **extra_fields,
         )
         
