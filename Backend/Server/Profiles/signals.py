@@ -1,21 +1,13 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from Users.models import User
-from Profiles.models import (
-    JobSeekerProfile, EmployerProfile, AdminProfile, SupportProfile,
-    PersonalInformation, IdCardInformation
-)
+from Profiles.models import JobSeekerProfile, EmployerProfile, AdminProfile, SupportProfile, PersonalInformation
 
 
 
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
-    """
-    ایجاد پروفایل برای کاربر بر اساس user_type در زمان ایجاد کاربر.
-    همچنین، برای پروفایل‌های جوینده کار و کارفرما، اطلاعات شخصی (PersonalInformation)
-    و کارت ملی (IdCardInformation) به صورت خودکار ایجاد می‌شوند.
-    """
     if created:
         if instance.user_type == "JS":  # Job Seeker
             # ایجاد اطلاعات شخصی با مقدار پیش‌فرض؛ در صورت نیاز این مقدارها را دچار تغییر کنید.
@@ -23,14 +15,9 @@ def create_user_profile(sender, instance, created, **kwargs):
                 gender=PersonalInformation.Gender.MAN,  # مقدار پیش‌فرض
                 age=18  # مقدار پیش‌فرض
             )
-            # ایجاد اطلاعات کارت ملی با وضعیت پیش‌فرض (در انتظار تایید)
-            id_card_info = IdCardInformation.objects.create(
-                id_card_status=IdCardInformation.IdCardStatus.PENDING
-            )
             JobSeekerProfile.objects.create(
                 user=instance,
                 personal_info=personal_info,
-                id_card_info=id_card_info,
                 kids_count=0,
                 headline="Undefined",       # مقدار پیش‌فرض، قابل تغییر
                 bio="",
@@ -51,14 +38,10 @@ def create_user_profile(sender, instance, created, **kwargs):
                 gender=PersonalInformation.Gender.MAN,  # مقدار پیش‌فرض؛ تغییر در صورت نیاز
                 age=30  # مقدار پیش‌فرض برای کارفرما
             )
-            id_card_info = IdCardInformation.objects.create(
-                id_card_status=IdCardInformation.IdCardStatus.PENDING
-            )
             EmployerProfile.objects.create(
                 user=instance,
                 company_name="Undefined",    # مقدار پیش‌فرض؛ کارفرمایان باید بعداً آن را به‌روز کنند
                 personal_info=personal_info,
-                id_card_info=id_card_info,
                 bio="",
                 profile_picture=None,
                 location=None,

@@ -4,6 +4,44 @@ from .managers import UserManager
 
 
 
+class IdCardInformation(models.Model):
+    class IdCardStatus(models.TextChoices):
+        PENDING = 'P', 'در انتظار تایید'
+        VERIFIED = 'V', 'تایید شده'
+        REJECTED = 'R', 'رد شده'
+
+    id_card_number = models.CharField(
+        verbose_name="شماره ملی",
+        max_length=13,
+        blank=True,
+        null=True,
+    )
+
+    id_card = models.FileField(
+        upload_to='jobseekers/id_cards/',
+        verbose_name="کارت ملی",
+        help_text="بارگذاری تصویر/اسکن کارت ملی",
+        blank=True,
+        null=True,
+    )
+
+    id_card_status = models.CharField(
+        max_length=1,
+        choices=IdCardStatus.choices,
+        default=IdCardStatus.PENDING,
+        verbose_name="وضعیت کارت ملی",
+        help_text="وضعیت بررسی کارت ملی"
+    )
+
+    class Meta:
+        verbose_name = "اطلاعات کارت ملی"
+        verbose_name_plural = "اطلاعات کارت ملی"
+
+    def __str__(self):
+        id_val = self.id_card_number if self.id_card_number else "No ID"
+        return f"{id_val} - {self.get_id_card_status_display()}"
+
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     # نوع‌های کاربر: تعریف نقش‌های مختلف برای کاربران
@@ -12,11 +50,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         EMPLOYER = "EM", "کارفرما"         # کارفرما
         SUPPORT = "SU", "پشتیبان"         # پشتیبان
         ADMIN = "AD", "مدیر"              # مدیر سیستم
-
-    # وضعیت احراز هویت دو مرحله‌ای
-    class TwoFactorAuthenticationStatus(models.TextChoices):
-        AUTHENTICATED = "A", "تایید شده"    # کاربری که احراز هویت شده است
-        UNAUTHENTICATED = "UA", "تایید نشده" # کاربری که احراز هویت نشده است
 
     # وضعیت حساب کاربری
     class AccountStatus(models.TextChoices):
@@ -31,19 +64,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name="نوع کاربر",
     )
 
-    # وضعیت احراز هویت دو مرحله‌ای: ذخیره وضعیت تایید هویت با نام شفاف‌تر
-    two_factor_auth_status = models.CharField(
-        max_length=2,
-        choices=TwoFactorAuthenticationStatus.choices,
-        default=TwoFactorAuthenticationStatus.UNAUTHENTICATED,
-        verbose_name="وضعیت احراز هویت دو مرحله‌ای",
-    )
-
-    # زمان تایید آخرین احراز هویت دو مرحله‌ای
-    tfa_verified_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="زمان تایید احراز هویت دو مرحله‌ای",
+    id_card_info = models.OneToOneField(
+        IdCardInformation,
+        on_delete=models.CASCADE,
+        verbose_name="اطلاعات کارت ملی",
+        related_name="id_card_info"
     )
 
     # وضعیت حساب: وضعیت کلی حساب کاربر (فعال، تعلیق شده یا حذف شده)
@@ -92,18 +117,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_updated = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ آخرین به‌روزرسانی",
-    )
-
-    # وضعیت تایید ایمیل: بررسی تایید ایمیل کاربر
-    email_verified = models.BooleanField(
-        default=False,
-        verbose_name="ایمیل تایید شده",
-    )
-
-    # وضعیت تایید شماره تلفن: بررسی تایید شماره تلفن کاربر
-    phone_verified = models.BooleanField(
-        default=False,
-        verbose_name="شماره تلفن تایید شده",
     )
 
     # وضعیت فعال بودن کاربر: نشان‌دهنده فعال بودن حساب کاربر

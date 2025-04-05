@@ -35,42 +35,6 @@ class PersonalInformation(models.Model):
         return f"{self.get_gender_display()} - {self.age}"
 
 
-class IdCardInformation(models.Model):
-    class IdCardStatus(models.TextChoices):
-        PENDING = 'P', 'در انتظار تایید'
-        VERIFIED = 'V', 'تایید شده'
-        REJECTED = 'R', 'رد شده'
-
-    id_card_number = models.CharField(
-        verbose_name="شماره ملی",
-        max_length=13,
-        blank=True,
-        null=True,
-    )
-    id_card = models.FileField(
-        upload_to='jobseekers/id_cards/',
-        verbose_name="کارت ملی",
-        help_text="بارگذاری تصویر/اسکن کارت ملی",
-        blank=True,
-        null=True,
-    )
-    id_card_status = models.CharField(
-        max_length=1,
-        choices=IdCardStatus.choices,
-        default=IdCardStatus.PENDING,
-        verbose_name="وضعیت کارت ملی",
-        help_text="وضعیت بررسی کارت ملی"
-    )
-
-    class Meta:
-        verbose_name = "اطلاعات کارت ملی"
-        verbose_name_plural = "اطلاعات کارت ملی"
-
-    def __str__(self):
-        id_val = self.id_card_number if self.id_card_number else "No ID"
-        return f"{id_val} - {self.get_id_card_status_display()}"
-
-
 
 
 class JobSeekerProfile(models.Model):
@@ -89,13 +53,6 @@ class JobSeekerProfile(models.Model):
         on_delete=models.CASCADE,
         verbose_name="اطلاعات شخصی",
         related_name="jobseeker_personal_info"
-    )
-
-    id_card_info = models.OneToOneField(
-        IdCardInformation,
-        on_delete=models.CASCADE,
-        verbose_name="اطلاعات کارت ملی",
-        related_name="jobseeker_id_card_info"
     )
 
     headline = models.CharField(
@@ -187,34 +144,33 @@ class EmployerProfile(models.Model):
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
+
     company_name = models.CharField(
         max_length=255,
         verbose_name="نام شرکت",
         help_text="نام شرکت یا سازمان"
     )
+
     personal_info = models.OneToOneField(
         PersonalInformation,
         on_delete=models.CASCADE,
         verbose_name="اطلاعات شخصی",
         related_name="employer_personal_info"
     )
-    id_card_info = models.OneToOneField(
-        IdCardInformation,
-        on_delete=models.CASCADE,
-        verbose_name="اطلاعات کارت ملی",
-        related_name="employer_id_card_info"
-    )
+
     bio = models.TextField(
         blank=True,
         verbose_name="بیوگرافی",
         help_text="توضیح مختصر درباره شرکت یا اهداف"
     )
+
     profile_picture = models.ImageField(
         upload_to='employers/profile_pics/',
         null=True,
         blank=True,
         verbose_name="تصویر پروفایل"
     )
+
     location = models.ForeignKey(
         City,
         on_delete=models.CASCADE,
@@ -222,6 +178,7 @@ class EmployerProfile(models.Model):
         blank=True,
         verbose_name="مکان"
     )
+
     industry = models.ForeignKey(
         Industry,
         on_delete=models.CASCADE,
@@ -229,19 +186,23 @@ class EmployerProfile(models.Model):
         null=True, 
         verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
     )
+
     contact_email = models.EmailField(
         blank=True,
         verbose_name="ایمیل تماس"
     )
+
     contact_phone = models.CharField(
         max_length=20,
         blank=True,
         verbose_name="شماره تماس"
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
+
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
@@ -265,10 +226,12 @@ class AdminProfile(models.Model):
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
+
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
@@ -287,15 +250,18 @@ class SupportProfile(models.Model):
     پروفایل پشتیبان سیستم.
     این مدل اطلاعات تخصص و ساعات کاری پشتیبان را ذخیره می‌کند.
     """
+    
     user = models.OneToOneField(
         "Users.User",
         on_delete=models.CASCADE,
         verbose_name="کاربر"
     )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="تاریخ ایجاد"
     )
+
     updated_at = models.DateTimeField(
         auto_now=True,
         verbose_name="تاریخ به‌روزرسانی"
