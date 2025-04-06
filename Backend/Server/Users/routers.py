@@ -2,8 +2,28 @@
 from rest_framework import routers
 from django.urls import path, include
 
-from .views import UserViewSet
+from .views import UserViewSet, IdCardViewSet
 
+
+
+class IdCardRouter(routers.DefaultRouter):
+    # مقداردهی اولیه روت سفارشی
+    def __init__(self):
+        super().__init__()
+        self.register(r'', IdCardViewSet, basename='users')
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('', include([
+                path('', IdCardViewSet.as_view({'get': 'list'})),
+                path('<int:pk>/', include([
+                    path('', IdCardViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
+                ])),
+            ])),
+        ]
+        return urls + custom_urls
+    
 
 # تعریف یک کلاس روت سفارشی
 class UserRouter(routers.DefaultRouter):

@@ -1,15 +1,16 @@
 # ایمپورت ماژول‌های ضروری
 from django.urls import path, include
-from .routers import UserRouter
+from .routers import UserRouter, IdCardRouter
 
 # تعریف نام برنامه
 app_name = "Users"
 
-# ایجاد یک نمونه از روت سفارشی
-router = UserRouter()
 
-# تعریف الگوهای URL برای این برنامه
+user_router = UserRouter()
+id_card_router = IdCardRouter()
+
+
 urlpatterns = [
-    # اضافه کردن URLهای روت سفارشی
-    path('', include(UserRouter().urls)),  # شامل کردن URLهای روت کاربر
+    path('user/', include(user_router.get_urls())),
+    path('id-card/', include(id_card_router.get_urls())),
 ]
