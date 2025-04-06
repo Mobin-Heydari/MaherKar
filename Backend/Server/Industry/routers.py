@@ -16,7 +16,7 @@ class IndustryCategoryRouter(DefaultRouter):
         custom_urls = [
             path('', include([
                 path('', IndustryCategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<slug:slug>/', IndustryCategoryViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
+                path('<slug:slug>/', IndustryCategoryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
             ])),
         ]
         return urls + custom_urls
@@ -32,8 +32,9 @@ class IndustryRouter(DefaultRouter):
         urls = super().get_urls()
         custom_urls = [
             path('', include([
-                path('', IndustryViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<slug:slug>/', IndustryViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
+                path('', IndustryViewSet.as_view({'get': 'list'})),
+                path('crate/<slug:category_slug>', IndustryViewSet.as_view({'post': 'create'})),
+                path('<slug:slug>/', IndustryViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
             ])),
         ]
         return urls + custom_urls
@@ -49,8 +50,9 @@ class SkillRouter(DefaultRouter):
         urls = super().get_urls()
         custom_urls = [
             path('', include([
-                path('', SkillViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<slug:slug>/', SkillViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
+                path('', SkillViewSet.as_view({'get': 'list'})),
+                path('crate/<slug:industry_slug>', IndustryViewSet.as_view({'post': 'create'})),
+                path('<str:name>/', SkillViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
             ])),
         ]
         return urls + custom_urls
