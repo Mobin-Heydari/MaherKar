@@ -41,7 +41,9 @@ class CityRouter(routers.DefaultRouter):
         custom_urls = [
             path('', include([
                 # URL patterns for listing (GET) and creating (POST) cities.
-                path('', CityViewSet.as_view({'get': 'list', 'post': 'create'})),
+                path('', CityViewSet.as_view({'get': 'list'})),
+
+                path('<slug:province_slug>', CityViewSet.as_view({'post': 'create'})),
                 # URL patterns using the city's slug for detail views.
                 path('<slug:slug>/', include([
                     path('', CityViewSet.as_view({

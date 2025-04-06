@@ -73,14 +73,12 @@ class CityViewSet(viewsets.ViewSet):
         serializer = CitySerializer(city, context={})
         return Response(serializer.data)
 
-    def create(self, request):
+    def create(self, request, province_slug):
         if not request.user.is_staff:
             raise PermissionDenied("Only admin users can create data.")
+        province = get_object_or_404(Province, slug=province_slug)
         # Pass 'province_slug' from the request data into the serializer context.
-        serializer = CitySerializer(
-            data=request.data, 
-            context={'province_slug': request.data.get('province_slug')}
-        )
+        serializer = CitySerializer(data=request.data, context={'province_slug': province.slug})
         if serializer.is_valid():
             serializer.save()  # Calls CitySerializer.create()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
