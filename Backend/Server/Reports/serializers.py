@@ -3,8 +3,6 @@ from .models import (
     ReportCategory,
     JobSeekerReport,
     EmployerReport,
-    AdminReport,
-    SupportReport,
     AdvertisementReport,
 )
 
@@ -91,79 +89,6 @@ class EmployerReportSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
-class AdminReportSerializer(serializers.ModelSerializer):
-    """
-    Serializer for AdminReport.
-    """
-    reported_admin_username = serializers.ReadOnlyField(source='reported_admin.user.username')
-    reporter_username = serializers.ReadOnlyField(source='reporter.username')
-
-    class Meta:
-        model = AdminReport
-        fields = [
-            'id',
-            'status',
-            'reported_admin',
-            'reported_admin_username',
-            'reporter',
-            'reporter_username',
-            'category',
-            'description',
-            'created_at',
-        ]
-
-    def create(self, validated_data):
-        """
-        Custom creation logic for AdminReport.
-        """
-        return AdminReport.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        """
-        Custom update logic for AdminReport.
-        """
-        instance.status = validated_data.get('status', instance.status)
-        instance.description = validated_data.get('description', instance.description)
-        instance.save()
-        return instance
-
-
-class SupportReportSerializer(serializers.ModelSerializer):
-    """
-    Serializer for SupportReport.
-    """
-    reported_support_username = serializers.ReadOnlyField(source='reported_support.user.username')
-    reporter_username = serializers.ReadOnlyField(source='reporter.username')
-
-    class Meta:
-        model = SupportReport
-        fields = [
-            'id',
-            'status',
-            'reported_support',
-            'reported_support_username',
-            'reporter',
-            'reporter_username',
-            'category',
-            'description',
-            'created_at',
-        ]
-
-    def create(self, validated_data):
-        """
-        Custom creation logic for SupportReport.
-        """
-        return SupportReport.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        """
-        Custom update logic for SupportReport.
-        """
-        instance.status = validated_data.get('status', instance.status)
-        instance.description = validated_data.get('description', instance.description)
-        instance.save()
-        return instance
 
 
 class AdvertisementReportSerializer(serializers.ModelSerializer):

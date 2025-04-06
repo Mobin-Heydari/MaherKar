@@ -5,15 +5,11 @@ from django.shortcuts import get_object_or_404
 from .models import (
     JobSeekerReport,
     EmployerReport,
-    AdminReport,
-    SupportReport,
     AdvertisementReport
 )
 from .serializers import (
     JobSeekerReportSerializer,
     EmployerReportSerializer,
-    AdminReportSerializer,
-    SupportReportSerializer,
     AdvertisementReportSerializer
 )
 
@@ -143,131 +139,6 @@ class EmployerReportViewSet(viewsets.ModelViewSet):
             return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
 
-
-class AdminReportViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing Admin reports.
-    """
-    queryset = AdminReport.objects.all()
-    serializer_class = AdminReportSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-
-    def list(self, request, *args, **kwargs):
-        """
-        List all Admin reports. Only accessible by admin users.
-        """
-        if request.user.is_staff:
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def retrieve(self, request, id=None, *args, **kwargs):
-        """
-        Retrieve a specific Admin report. Accessible by admin, reporter, or reported Admin.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter or request.user == report.reported_admin.user:
-            serializer = self.get_serializer(report)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new Admin report.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(reporter=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, id=None, *args, **kwargs):
-        """
-        Update an existing Admin report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def destroy(self, request, id=None, *args, **kwargs):
-        """
-        Delete an Admin report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            report.delete()
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-
-class SupportReportViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for managing Support reports.
-    """
-    queryset = SupportReport.objects.all()
-    serializer_class = SupportReportSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-
-    def list(self, request, *args, **kwargs):
-        """
-        List all Support reports. Only accessible by admin users.
-        """
-        if request.user.is_staff:
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def retrieve(self, request, id=None, *args, **kwargs):
-        """
-        Retrieve a specific Support report. Accessible by admin, reporter, or reported Support user.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter or request.user == report.reported_support.user:
-            serializer = self.get_serializer(report)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new Support report.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(reporter=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, id=None, *args, **kwargs):
-        """
-        Update an existing Support report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def destroy(self, request, id=None, *args, **kwargs):
-        """
-        Delete a Support report. Only admin or the reporter can perform this action.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            report.delete()
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
 
 class JobAdvertisementReportViewSet(viewsets.ModelViewSet):
     """

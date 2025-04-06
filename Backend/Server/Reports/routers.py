@@ -3,9 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     JobSeekerReportViewSet,
     EmployerReportViewSet,
-    AdminReportViewSet,
-    SupportReportViewSet,
-    JobAdvertisementReportViewSet,
+    JobAdvertisementReportViewSet
 )
 
 
@@ -40,37 +38,6 @@ class EmployerReportRouter(DefaultRouter):
         ]
         return urls + custom_urls
 
-
-class AdminReportRouter(DefaultRouter):
-    def __init__(self):
-        super().__init__()
-        self.register(r'', AdminReportViewSet, basename='admin-report')
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('', include([
-                path('', AdminReportViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<int:id>/', AdminReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
-            ])),
-        ]
-        return urls + custom_urls
-
-
-class SupportReportRouter(DefaultRouter):
-    def __init__(self):
-        super().__init__()
-        self.register(r'', SupportReportViewSet, basename='support-report')
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('', include([
-                path('', SupportReportViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<int:id>/', SupportReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
-            ])),
-        ]
-        return urls + custom_urls
 
 
 class JobAdvertisementReportRouter(DefaultRouter):
