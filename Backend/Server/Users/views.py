@@ -4,10 +4,42 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import User
-from .serializers import UserSerializer
+from .models import User, IdCardInFormation
+from .serializers import UserSerializer, IdCardInFormationSerializer
 
 
+
+
+class IdCardViewSet(viewsets):
+
+    def list(self, request):
+        if request.user.is_staff:
+            queryset = IdCardInFormation.objects.all()
+            serializer = IdCardInFormationSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"Massage": "You dont have the permission to acess the id cards"}, status=status.HTTP_403_FORBIDDEN)
+    
+       
+    def retreive(self ,request, pk):
+        query = get_object_or_404(IdCardInFormation, id=pk)
+        if request.user.is_staff or query.id_card_info:
+            serializer = UserSerializer(query)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"Massage": "You dont have the permmsions to read"}, status=status.HTTP_403_FORBIDDEN)
+        
+    def retreive(self ,request, pk):
+        query = get_object_or_404(IdCardInFormation, id=pk)
+        if request.user.is_staff or query.id_card_info:
+            serializer = UserSerializer(query)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"Massage": "You dont have the permmsions to update"}, status=status.HTTP_403_FORBIDDEN)
 
 
 # ویوست برای مدل کاربر

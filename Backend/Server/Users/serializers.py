@@ -3,7 +3,7 @@ from .models import User, IdCardInFormation
 
 
 
-class IdCardInformationSerializer(serializers.ModelSerializer):
+class IdCardInFormationSerializer(serializers.ModelSerializer):
     """
     سریالایزر برای اطلاعات کارت ملی
     """
@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
     سریالایزر برای مدل کاربر
     """
 
-    id_card_info = IdCardInformationSerializer()
+    id_card_info = IdCardInFormationSerializer()
 
     class Meta:
         model = User
