@@ -33,9 +33,9 @@ class JobAdvertisementRouter(routers.DefaultRouter):
         custom_urls = [
             path('', include([
                 path('', JobAdvertisementViewSet.as_view({'get': 'list'})),
-                path('<int:pk>/', JobAdvertisementViewSet.as_view({'get': 'update'})),
                 path('<slug:slug>/', JobAdvertisementViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
-                path('<int:pk>/<slug:slug>/', JobAdvertisementViewSet.as_view({'get': 'update'})),
+                path('<int:pk>/', JobAdvertisementViewSet.as_view({'put': 'update'})),
+                path('<int:pk>/<slug:slug>/', JobAdvertisementViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
         return urls + custom_urls
@@ -51,9 +51,9 @@ class ResumeAdvertisementRouter(routers.DefaultRouter):
         custom_urls = [
             path('', include([
                 path('', ResumeAdvertisementViewSet.as_view({'get': 'list', 'post': 'create'})),
-                path('<int:pk>/', ResumeAdvertisementViewSet.as_view({'get': 'update'})),
                 path('<slug:slug>/', ResumeAdvertisementViewSet.as_view({'get': 'retrieve'})),
-                path('<int:pk>/<slug:slug>/', ResumeAdvertisementViewSet.as_view({'get': 'update'})),
+                path('<int:pk>/', ResumeAdvertisementViewSet.as_view({'put': 'update'})),
+                path('<int:pk>/<slug:slug>/', ResumeAdvertisementViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
         return urls + custom_urls

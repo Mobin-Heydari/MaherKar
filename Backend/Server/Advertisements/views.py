@@ -25,7 +25,7 @@ class AdvertisementViewSet(viewsets.ViewSet):
     
     def update(self, request, slug):
         query = get_object_or_404(Advertisement, slug=slug)
-        serializer = AdvertisementSerializer(query, data=request.data, partial=True)
+        serializer = AdvertisementSerializer(query, data=request.data, partial=True, context={'request': request})
         if request.user == query.owner or request.user.is_staff:
             if serializer.is_valid():
                 serializer.save()
@@ -55,12 +55,15 @@ class JobAdvertisementViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request, slug):
-        serializer = JobAdvertisementSerializer(data=request.data, context={'company_slug': slug, 'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"Massage": "Job created."}, status=status.HTTP_201_CREATED)
+        if request.user.user_type == "EM":
+            serializer = JobAdvertisementSerializer(data=request.data, context={'company_slug': slug, 'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"Massage": "Job created."}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Massage": "You are not a employer."}, status=status.HTTP_403_FORBIDDEN)
 
     def update(self, request, pk):
         query = get_object_or_404(JobAdvertisement, id=pk)
@@ -162,19 +165,22 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()  # Automatically handles job seeker linkage in the serializer
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None, *args, **kwargs):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data, partial=True, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
 
     def destroy(self, request, pk=None, *args, **kwargs):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        instance.delete()
-        return Response({"detail": "Application deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        if request.user.is_staff:
+            instance = get_object_or_404(self.get_queryset(), pk=pk)
+            instance.delete()
+            return Response({"detail": "Application deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"Massage": "You dont have the permissions"}, status=status.HTTP_403_FORBIDDEN)

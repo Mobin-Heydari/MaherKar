@@ -37,12 +37,18 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             'advertise_code', 'description', 'status', 'gender',
             'soldier_status', 'degree', 'salary', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'advertise_code', 'slug', 'created_at', 'updated_at', 'subscription', 'status', 'owner']
+        read_only_fields = ['id', 'advertise_code', 'slug', 'created_at', 'updated_at', 'subscription', 'owner']
     
 
     def update(self, instance, validated_data):
+        request = self.context.get('request')
+
+        if request.user.is_staff:
+            instance.status = validated_data.get("status", instance.status)
+            
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+
         instance.save()
         return instance
 
@@ -204,11 +210,19 @@ class ApplicationSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
+
+        request = self.context.get('request')
         # Forbid updates to critical fields
         forbidden_fields = ["job_seeker", "advertisement", "resume"]
+
+        if request.user == instance.advertisement.advertisement.owner:
+            instance.status = validated_data.get('status', instance.status)
+
         for field in forbidden_fields:
             if field in validated_data:
                 raise serializers.ValidationError({field: f"You cannot change the {field} field."})
+        
+        instance.save()
         
         # Allow updates for other allowed fields
         return super().update(instance, validated_data)
