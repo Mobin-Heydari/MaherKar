@@ -1,37 +1,40 @@
-from rest_framework.routers import DefaultRouter
-from django.urls import path, include
-from .views import CompanyViewSet
+from rest_framework.routers import DefaultRouter  # وارد کردن کلاس DefaultRouter از Django REST Framework جهت ایجاد روتر سفارشی
+from django.urls import path, include             # وارد کردن توابع path و include برای تعریف و درج URLها
+from .views import CompanyViewSet                   # ایمپورت ویوست مربوط به شرکت (CompanyViewSet)
 
-
-
-
-
+# تعریف یک روتر سفارشی برای مدیریت CompanyViewSet به همراه الگوهای URL اضافی
 class CompanyRouter(DefaultRouter):
     """
-    Custom router for managing CompanyViewSet with additional URL patterns.
+    روتر سفارشی برای مدیریت CompanyViewSet با الگوهای URL اضافه.
     """
     def __init__(self):
+        # فراخوانی سازنده‌ی کلاس والد (DefaultRouter)
         super().__init__()
-        # Register the CompanyViewSet with the base path
+        # ثبت CompanyViewSet در روتر با مسیر پایه (prefix خالی) و تعیین basename 'company'
         self.register(r'', CompanyViewSet, basename='company')
 
     def get_urls(self):
         """
-        Extend default URLs with custom patterns if needed.
+        گسترش URLهای پیش‌فرض با الگوهای سفارشی در صورت نیاز.
         """
-        # Default URLs from the parent class
+        # دریافت URLهای پیش‌فرض تعریف شده توسط کلاس والد
         urls = super().get_urls()
 
-        # Define custom URLs for the CompanyViewSet
+        # تعریف URLهای سفارشی برای CompanyViewSet
         custom_urls = [
             path('', include([
-                path('', CompanyViewSet.as_view({'get': 'list'})),  # Custom URL for listing companies
-                path('', CompanyViewSet.as_view({'post': 'create'})),  # Custom URL for creating companies
-                path('<str:slug>/', include([  # Custom URL for retrieving a specific company
+                # مسیر خالی برای فراخوانی متد list ویوست (دریافت لیست شرکت‌ها) از طریق متد GET
+                path('', CompanyViewSet.as_view({'get': 'list'})),
+                # مسیر خالی برای فراخوانی متد create ویوست (ایجاد شرکت جدید) از طریق متد POST
+                path('', CompanyViewSet.as_view({'post': 'create'})),
+                # مسیر شامل یک پارامتر رشته‌ای (slug) برای عملیات دریافت و به‌روزرسانی یک شرکت خاص
+                path('<str:slug>/', include([
+                    # فراخوانی متد retrieve جهت دریافت اطلاعات یک شرکت (به وسیله GET)
                     path('', CompanyViewSet.as_view({'get': 'retrieve'})),
+                    # فراخوانی متد update جهت به‌روزرسانی اطلاعات شرکت (به وسیله PUT)
                     path('', CompanyViewSet.as_view({'put': 'update'})),
                 ])),
             ])),
         ]
-        # Return the combined list of default and custom URLs
+        # ترکیب URLهای پیش‌فرض و سفارشی و بازگرداندن کل مجموعه URLها
         return urls + custom_urls

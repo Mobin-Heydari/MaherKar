@@ -1,148 +1,168 @@
-from django.db import models
-from django.utils.text import slugify
+from django.db import models  # وارد کردن ماژول مدل‌های Django جهت تعریف مدل‌های دیتابیس
+from django.utils.text import slugify  # وارد کردن تابع slugify جهت تولید اسلاگ از رشته (مثلاً نام شرکت)
 
-from Locations.models import City
-from Industry.models import Industry
+# ایمپورت مدل‌های مرتبط از اپ‌های دیگر:
+from Locations.models import City       # ایمپورت مدل City از اپ Locations جهت ذخیره اطلاعات شهر
+from Industry.models import Industry      # ایمپورت مدل Industry از اپ Industry جهت ذخیره اطلاعات صنعت
 
 
-
+  
 class Company(models.Model):
-
-    # ارتباط با مدل مدیرعامل
+    # -------------------------------
+    # فیلد مربوط به مدیرعامل شرکت
+    # -------------------------------
     employer = models.ForeignKey(
-        'Users.User',
-        on_delete=models.CASCADE,
-        verbose_name="مدیرعامل"
+        'Users.User',  # ارجاع به مدل User از اپ Users
+        on_delete=models.CASCADE,  # در صورت حذف مدیرعامل، شرکت نیز حذف می‌شود
+        verbose_name="مدیرعامل"  # نام نمایشی فیلد در پنل ادمین
     )
 
-    # اطلاعات پایه شرکت
+    # -------------------------------
+    # فیلدهای اطلاعات پایه شرکت
+    # -------------------------------
     name = models.CharField(
         max_length=255, 
-        unique=True, 
-        verbose_name="نام شرکت"  # نام شرکت
+        unique=True,  # نام شرکت باید یکتا باشد
+        verbose_name="نام شرکت"  # نام شرکت جهت نمایش در پنل
     )
     slug = models.SlugField(
         max_length=255, 
-        unique=True, 
-        blank=True, 
-        verbose_name="اسلاگ"  # اسلاگ شرکت برای URL
+        unique=True,  # اسلاگ نیز باید یکتا باشد
+        blank=True,   # امکان خالی ماندن اسلاگ وجود دارد؛ در متد save پر می‌شود
+        verbose_name="اسلاگ"  # نام نمایشی فیلد اسلاگ
     )
     description = models.TextField(
-        blank=True, 
-        null=True, 
-        verbose_name="توضیحات"  # توضیحات درباره شرکت
+        blank=True,  # توضیحات اختیاری است
+        null=True,   # امکان ذخیره مقدار None فراهم شده است
+        verbose_name="توضیحات"  # توضیحات شرکت
     )
     website = models.URLField(
-        blank=True, 
-        null=True, 
+        blank=True,  # وبسایت اختیاری است
+        null=True,
         verbose_name="وبسایت"  # لینک وبسایت شرکت
     )
     email = models.EmailField(
-        blank=True, 
-        null=True, 
+        blank=True,  # ایمیل اختیاری می‌باشد
+        null=True,
         verbose_name="ایمیل"  # ایمیل رسمی شرکت
     )
     phone_number = models.CharField(
         max_length=20, 
-        blank=True, 
-        null=True, 
-        verbose_name="شماره تماس"  # شماره تماس
+        blank=True,  # شماره تماس اختیاری
+        null=True,
+        verbose_name="شماره تماس"  # شماره تماس شرکت
     )
 
-    # فایل‌های رسانه‌ای شرکت
+    # -------------------------------
+    # فیلدهای رسانه‌ای شرکت
+    # -------------------------------
     logo = models.ImageField(
-        upload_to='company/logos/', 
-        blank=True, 
-        null=True, 
-        verbose_name="لوگو"  # لوگوی شرکت
+        upload_to='company/logos/',  # مسیر ذخیره لوگوی شرکت در پوشه‌ی تعیین شده
+        blank=True,  # لوگو اختیاری است
+        null=True,
+        verbose_name="لوگو"  # نمایش عنوان فیلد
     )
     banner = models.ImageField(
-        upload_to='company/banners/', 
-        blank=True, 
-        null=True, 
-        verbose_name="بنر"  # بنر شرکت
+        upload_to='company/banners/',  # مسیر ذخیره بنر شرکت
+        blank=True,
+        null=True,
+        verbose_name="بنر"  # عنوان نمایشی فیلد
     )
     intro_video = models.FileField(
-        upload_to='company/videos/', 
-        blank=True, 
-        null=True, 
-        verbose_name="ویدئوی معرفی"  # ویدئو معرفی شرکت
+        upload_to='company/videos/',  # مسیر ذخیره ویدئوی معرفی
+        blank=True,
+        null=True,
+        verbose_name="ویدئوی معرفی"  # عنوان نمایشی فیلد ویدئو
     )
 
-    # آدرس شرکت
+    # -------------------------------
+    # آدرس و مکان شرکت
+    # -------------------------------
     address = models.TextField(
-        blank=True, 
-        null=True, 
+        blank=True,
+        null=True,
         verbose_name="آدرس"  # آدرس کامل شرکت
     )
-
     location = models.ForeignKey(
-        City,
-        on_delete=models.CASCADE,
-        max_length=100,
-        verbose_name="شهر"  # شهر
+        City,  # ارتباط با مدل City جهت تعیین شهر شرکت
+        on_delete=models.CASCADE,  # در صورت حذف شهر، شرکت نیز حذف می‌شود
+        max_length=100,            # محدودیت طول رشته (این مقدار معمولاً در فیلد ForeignKey کاربرد ندارد)
+        verbose_name="شهر"  # نمایش عنوان فیلد
     )
-
     postal_code = models.CharField(
         max_length=20, 
-        blank=True, 
-        null=True, 
-        verbose_name="کد پستی"  # کد پستی
+        blank=True,
+        null=True,
+        verbose_name="کد پستی"  # کد پستی شرکت
     )
 
+    # -------------------------------
     # اطلاعات اضافی شرکت
+    # -------------------------------
     founded_date = models.DateField(
-        blank=True, 
-        null=True, 
-        verbose_name="تاریخ تأسیس"  # تاریخ تاسیس شرکت
+        blank=True,
+        null=True,
+        verbose_name="تاریخ تأسیس"  # تاریخی که شرکت تأسیس شده است
     )
     industry = models.ForeignKey(
-        Industry,
-        on_delete=models.CASCADE,
-        blank=True, 
-        null=True, 
-        verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
+        Industry,  # ارتباط با مدل Industry جهت تعیین صنعتی که شرکت در آن فعالیت می‌کند
+        on_delete=models.CASCADE,  # در صورت حذف صنعت، شرکت نیز حذف می‌شود
+        blank=True,
+        null=True,
+        verbose_name="صنعت"  # عنوان نمایشی فیلد
     )
     number_of_employees = models.IntegerField(
-        blank=True, 
-        null=True, 
-        verbose_name="تعداد کارکنان"  # تعداد کارکنان
+        blank=True,   # تعداد کارکنان اختیاری است
+        null=True,
+        verbose_name="تعداد کارکنان"  # تعداد کارکنان شرکت
     )
 
-    # لینک‌های شبکه‌های اجتماعی
+    # -------------------------------
+    # اطلاعات شبکه‌های اجتماعی شرکت
+    # -------------------------------
     linkedin = models.URLField(
-        blank=True, 
-        null=True, 
-        verbose_name="لینک LinkedIn"  # لینک صفحه LinkedIn
+        blank=True,
+        null=True,
+        verbose_name="لینک LinkedIn"  # لینک صفحه LinkedIn شرکت
     )
     twitter = models.URLField(
-        blank=True, 
-        null=True, 
-        verbose_name="لینک Twitter"  # لینک صفحه Twitter
+        blank=True,
+        null=True,
+        verbose_name="لینک Twitter"  # لینک صفحه Twitter شرکت
     )
     instagram = models.URLField(
-        blank=True, 
-        null=True, 
-        verbose_name="لینک Instagram"  # لینک صفحه Instagram
+        blank=True,
+        null=True,
+        verbose_name="لینک Instagram"  # لینک صفحه Instagram شرکت
     )
 
-    # زمان‌بندی‌ها
+    # -------------------------------
+    # زمان‌بندی‌ها (تاریخ ایجاد و به‌روزرسانی)
+    # -------------------------------
     created_at = models.DateTimeField(
-        auto_now_add=True, 
-        verbose_name="تاریخ ایجاد"  # تاریخ ایجاد رکورد
+        auto_now_add=True,  # زمان ایجاد رکورد به‌طور خودکار ثبت می‌شود
+        verbose_name="تاریخ ایجاد"  # عنوان نمایشی فیلد
     )
     updated_at = models.DateTimeField(
-        auto_now=True, 
-        verbose_name="تاریخ بروزرسانی"  # تاریخ آخرین به‌روزرسانی رکورد
+        auto_now=True,  # زمان آخرین به‌روزرسانی رکورد به‌روز می‌شود
+        verbose_name="تاریخ بروزرسانی"  # عنوان نمایشی فیلد
     )
 
+    # -------------------------------
+    # متد نمایش (نمایش نام شرکت در پنل ادمین)
+    # -------------------------------
     def __str__(self):
-        return self.name
+        return self.name  # بازگرداندن نام شرکت به عنوان نمایش نمونه
 
+    # -------------------------------
+    # متد ذخیره‌سازی سفارشی
+    # -------------------------------
     def save(self, *args, **kwargs):
         """
-        قبل از ذخیره‌سازی، اسلاگ را بر اساس نام شرکت تنظیم می‌کند.
+        قبل از ذخیره‌سازی، اگر فیلد slug خالی باشد، آن را از نام شرکت تولید می‌کند.
         """
         if not self.slug:
+            # استفاده از تابع slugify برای تولید نسخه‌ای URL-friendly از نام شرکت
             self.slug = slugify(self.name)
+        # فراخوانی متد save کلاس والد جهت ذخیره اطلاعات در دیتابیس
         super(Company, self).save(*args, **kwargs)

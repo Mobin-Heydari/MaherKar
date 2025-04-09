@@ -1,53 +1,55 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import serializers
-from .models import Company
-from Users.models import User
+from django.shortcuts import get_object_or_404  # تابع get_object_or_404 برای دریافت شیء یا برگرداندن خطای 404 در صورتی‌که شیء یافت نشود
+from rest_framework import serializers          # وارد کردن سریالایزرهای Django REST Framework
+from .models import Company                       # ایمپورت مدل Company از همین اپلیکیشن
+from Users.models import User                      # ایمپورت مدل User برای دسترسی به اطلاعات کاربر (مدیرعامل)
 
 
 
-
-
+# تعریف سریالایزر برای مدل شرکت
 class CompanySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Company
+        model = Company  # مدل مرتبط
+        # تعریف فیلدهایی که باید در خروجی سریالایزر گنجانده شوند
         fields = [
-            'id',
-            'employer',
-            'name',
-            'slug',
-            'description',
-            'website',
-            'email',
-            'phone_number',
-            'logo',
-            'banner',
-            'intro_video',
-            'address',
-            'location',
-            'postal_code',
-            'founded_date',
-            'industry',
-            'number_of_employees',
-            'linkedin',
-            'twitter',
-            'instagram',
-            'created_at',
-            'updated_at'
+            'id',                 # شناسه یکتا
+            'employer',           # مدیرعامل (کاربر مرتبط)
+            'name',               # نام شرکت
+            'slug',               # اسلاگ شرکت، به صورت URL-friendly
+            'description',        # توضیحات شرکت
+            'website',            # آدرس وبسایت شرکت
+            'email',              # ایمیل رسمی شرکت
+            'phone_number',       # شماره تماس شرکت
+            'logo',               # لوگوی شرکت
+            'banner',             # بنر شرکت
+            'intro_video',        # ویدئوی معرفی شرکت
+            'address',            # آدرس فیزیکی شرکت
+            'location',           # شهر یا محل شرکت (ارتباط با مدل City)
+            'postal_code',        # کد پستی
+            'founded_date',       # تاریخ تأسیس شرکت
+            'industry',           # صنعتی که شرکت در آن فعالیت می‌کند
+            'number_of_employees',# تعداد کارکنان شرکت
+            'linkedin',           # لینک حساب LinkedIn شرکت
+            'twitter',            # لینک حساب Twitter شرکت
+            'instagram',          # لینک حساب Instagram شرکت
+            'created_at',         # تاریخ ایجاد رکورد (خودکار)
+            'updated_at'          # تاریخ آخرین به‌روزرسانی رکورد (خودکار)
         ]
-        # Set employer, slug, and timestamps as read-only fields
+        # تعیین فیلدهای read-only: این فیلدها توسط کاربر تغییر نمی‌کنند
         read_only_fields = ['employer', 'slug', 'created_at', 'updated_at']
-    
-
 
     def create(self, validated_data):
-        # Fetch the employer_id from serializer context
+        """
+        ایجاد نمونه جدید شرکت.
+        در این متد، شناسه employer از context سریالایزر دریافت شده و کاربر مربوطه واکشی می‌شود.
+        سپس شرکت با استفاده از داده‌های ورودی و کاربر بازیابی شده ایجاد می‌گردد.
+        """
+        # گرفتن شناسه مدیرعامل (employer_id) از context سریالایزر
         employer_id = self.context.get('employer_id')
-        
-        # Get the employer user object
+        # بازیابی شیء کاربر با استفاده از employer_id؛ در صورت عدم وجود، خطای 404 صادر می‌شود
         employer = get_object_or_404(User, id=employer_id)
 
-        # Create the company instance
+        # ایجاد نمونه‌ی شرکت با استفاده از داده‌های معتبر ورودی
         company = Company.objects.create(
             employer=employer,
             name=validated_data.get('name'),
@@ -71,9 +73,12 @@ class CompanySerializer(serializers.ModelSerializer):
 
         return company
 
-    
     def update(self, instance, validated_data):
-        # Prevent updating the employer field by skipping validation for it
+        """
+        به‌روزرسانی نمونه‌ی موجود شرکت.
+        فیلد employer به‌عنوان read-only تعریف شده و تغییر نخواهد کرد.
+        سایر فیلدها با داده‌های ورودی به‌روز می‌شوند و سپس نمونه ذخیره می‌گردد.
+        """
         instance.name = validated_data.get('name', instance.name)
         instance.description = validated_data.get('description', instance.description)
         instance.website = validated_data.get('website', instance.website)
@@ -92,6 +97,6 @@ class CompanySerializer(serializers.ModelSerializer):
         instance.twitter = validated_data.get('twitter', instance.twitter)
         instance.instagram = validated_data.get('instagram', instance.instagram)
 
-        # Save and return the updated instance
+        # ذخیره نمونه به‌روز شده در دیتابیس
         instance.save()
         return instance
