@@ -1,7 +1,8 @@
-# ایمپورت ماژول‌های مورد نیاز
-from rest_framework import routers
-from django.urls import path, include
+# ایمپورت ماژول‌های مورد نیاز:
+from rest_framework import routers  # وارد کردن روترهای پیش‌فرض Django REST Framework
+from django.urls import path, include  # وارد کردن توابع path و include برای تعریف الگوهای URL
 
+# ایمپورت ویوست‌های مربوط به پروفایل‌های مختلف (جوینده کار، کارفرما، مدیر و پشتیبان)
 from .views import (
     JobSeekerProfileViewSet,
     EmployerProfileViewSet,
@@ -10,83 +11,109 @@ from .views import (
 )
 
 
-
+# -------------------------------
+# تعریف روتر سفارشی برای پروفایل‌های جویندگان کار
+# -------------------------------
 class JobSeekerRouter(routers.DefaultRouter):
-    # مقداردهی اولیه روت سفارشی
+    # مقداردهی اولیه روتر سفارشی برای جویندگان کار
     def __init__(self):
-        super().__init__()
-        # ثبت ویوست JobSeekerProfileViewSet در این روت سفارشی
+        super().__init__()  # فراخوانی سازنده‌ی کلاس والد DefaultRouter
+        # ثبت ویوست JobSeekerProfileViewSet در این روتر با basename 'job-seekers'
         self.register(r'', JobSeekerProfileViewSet, basename='job-seekers')
 
-    # تعریف یک متد برای دریافت URLهای سفارشی
+    # متد get_urls جهت تعریف URLهای سفارشی به همراه URLهای پیش‌فرض
     def get_urls(self):
-        # دریافت URLها از کلاس والد
-        urls = super().get_urls()
-        # تعریف URLهای سفارشی برای JobSeekerProfileViewSet
+        urls = super().get_urls()  # دریافت URLهای پیش‌فرض تعریف شده توسط DefaultRouter
+        # تعریف URLهای سفارشی برای عملیات لیست، جزئیات و به‌روزرسانی پروفایل‌های جویندگان کار
         custom_urls = [
-            # تعریف یک الگوی URL برای لیست پروفایل‌های جویندگان کار
             path('', include([
+                # مسیر خالی جهت فراخوانی متد list در JobSeekerProfileViewSet (دریافت لیست پروفایل‌ها)
                 path('', JobSeekerProfileViewSet.as_view({'get': 'list'})),
-                # تعریف یک الگوی URL برای جزئیات یک جوینده کار خاص
+                # مسیر دارای پارامتر user__username جهت دریافت جزئیات یک پروفایل خاص
                 path('<str:user__username>/', include([
+                    # در این مسیر، متد GET برای دریافت جزئیات (retrieve) و متد PUT برای به‌روزرسانی (update) استفاده می‌شود
                     path('', JobSeekerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
-        # بازگشت URLهای سفارشی به علاوه URLهای اولیه
+        # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگردانی کل مجموعه
         return urls + custom_urls
 
 
+# -------------------------------
+# تعریف روتر سفارشی برای پروفایل‌های کارفرمایان
+# -------------------------------
 class EmployerRouter(routers.DefaultRouter):
     def __init__(self):
         super().__init__()
+        # ثبت ویوست EmployerProfileViewSet در این روتر با basename 'employers'
         self.register(r'', EmployerProfileViewSet, basename='employers')
 
     def get_urls(self):
-        urls = super().get_urls()
+        urls = super().get_urls()  # دریافت URLهای پیش‌فرض از والد
+        # تعریف URLهای سفارشی برای عملیات لیست و جزئیات/به‌روزرسانی پروفایل‌های کارفرما
         custom_urls = [
             path('', include([
+                # مسیر خالی جهت فراخوانی متد list (دریافت لیست پروفایل‌های کارفرما)
                 path('', EmployerProfileViewSet.as_view({'get': 'list'})),
+                # مسیر دارای پارامتر user__username جهت دریافت جزئیات یا به‌روزرسانی یک پروفایل کارفرما
                 path('<str:user__username>/', include([
                     path('', EmployerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
+        # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگردانی کل مجموعه
         return urls + custom_urls
 
 
+# -------------------------------
+# تعریف روتر سفارشی برای پروفایل‌های مدیر
+# -------------------------------
 class AdminRouter(routers.DefaultRouter):
     def __init__(self):
         super().__init__()
+        # ثبت ویوست AdminProfileViewSet در این روتر با basename 'admins'
         self.register(r'', AdminProfileViewSet, basename='admins')
 
     def get_urls(self):
-        urls = super().get_urls()
+        urls = super().get_urls()  # دریافت URLهای پیش‌فرض
+        # تعریف URLهای سفارشی جهت دریافت لیست و جزئیات/به‌روزرسانی پروفایل‌های مدیر
         custom_urls = [
             path('', include([
+                # مسیر خالی جهت فراخوانی متد list برای دریافت لیست پروفایل‌های مدیر
                 path('', AdminProfileViewSet.as_view({'get': 'list'})),
+                # مسیر دارای پارامتر user__username جهت دریافت اطلاعات یک پروفایل مدیر
                 path('<str:user__username>/', include([
+                    # استفاده از متد GET برای دریافت جزئیات و PUT برای به‌روزرسانی
                     path('', AdminProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
+        # برگشت تمام URLهای به صورت ترکیبی
         return urls + custom_urls
 
 
-
+# -------------------------------
+# تعریف روتر سفارشی برای پروفایل‌های پشتیبان
+# -------------------------------
 class SupportRouter(routers.DefaultRouter):
     def __init__(self):
         super().__init__()
+        # ثبت ویوست SupportProfileViewSet در این روتر با basename 'supports'
         self.register(r'', SupportProfileViewSet, basename='supports')
 
     def get_urls(self):
-        urls = super().get_urls()
+        urls = super().get_urls()  # دریافت URLهای پیش‌فرض از کلاس والد
+        # تعریف URLهای سفارشی برای فرآیندهای لیست، دریافت جزئیات و به‌روزرسانی پروفایل‌های پشتیبان
         custom_urls = [
             path('', include([
+                # مسیر خالی جهت فراخوانی متد list (دریافت لیست پروفایل‌های پشتیبان)
                 path('', SupportProfileViewSet.as_view({'get': 'list'})),
+                # مسیر دارای پارامتر user__username برای دریافت یا به‌روزرسانی یک پروفایل پشتیبان خاص
                 path('<str:user__username>/', include([
                     path('', SupportProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
+        # ترکیب URLهای پیش‌فرض با سفارشی و بازگردانی کل مجموعه URL
         return urls + custom_urls
