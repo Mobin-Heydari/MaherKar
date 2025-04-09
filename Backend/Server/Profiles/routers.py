@@ -29,7 +29,7 @@ class JobSeekerRouter(routers.DefaultRouter):
                 path('', JobSeekerProfileViewSet.as_view({'get': 'list'})),
                 # تعریف یک الگوی URL برای جزئیات یک جوینده کار خاص
                 path('<str:user__username>/', include([
-                    path('', JobSeekerProfileViewSet.as_view({'get': 'retrieve'})),
+                    path('', JobSeekerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
@@ -48,7 +48,7 @@ class EmployerRouter(routers.DefaultRouter):
             path('', include([
                 path('', EmployerProfileViewSet.as_view({'get': 'list'})),
                 path('<str:user__username>/', include([
-                    path('', EmployerProfileViewSet.as_view({'get': 'retrieve'})),
+                    path('', EmployerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
@@ -66,7 +66,7 @@ class AdminRouter(routers.DefaultRouter):
             path('', include([
                 path('', AdminProfileViewSet.as_view({'get': 'list'})),
                 path('<str:user__username>/', include([
-                    path('', AdminProfileViewSet.as_view({'get': 'retrieve'})),
+                    path('', AdminProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]
@@ -85,7 +85,7 @@ class SupportRouter(routers.DefaultRouter):
             path('', include([
                 path('', SupportProfileViewSet.as_view({'get': 'list'})),
                 path('<str:user__username>/', include([
-                    path('', SupportProfileViewSet.as_view({'get': 'retrieve'})),
+                    path('', SupportProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
                 ])),
             ])),
         ]

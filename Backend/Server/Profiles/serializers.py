@@ -9,26 +9,21 @@ from .models import (
 
 class PersonalInformationSerializer(serializers.ModelSerializer):
     """
-    سریالایزر برای اطلاعات شخصی
+    Serializer for personal information.
     """
-
     class Meta:
         model = PersonalInformation
         fields = ['gender', 'age', 'kids_count']
-        read_only_fields = []
-
-    def update(self, instance, validated_data):
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
-        instance.save()
-        return instance
+        # Remove read_only_fields if you want to allow updates
+        # read_only_fields = []
 
 
 class JobSeekerProfileSerializer(serializers.ModelSerializer):
     """
-    سریالایزر برای مدل پروفایل جوینده کار.
+    Serializer for the Job Seeker Profile model.
     """
-    personal_info = PersonalInformationSerializer(read_only=True)
+    # Remove read_only=True so that this nested field can also accept input data.
+    personal_info = PersonalInformationSerializer()
 
     class Meta:
         model = JobSeekerProfile
@@ -51,9 +46,28 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
     def update(self, instance, validated_data):
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
+        # Pop the nested data out of the parent data.
+        personal_info_data = validated_data.pop('personal_info', None)
+        
+        # Update the main JobSeekerProfile fields.
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
+    
+        # If there is nested personal information, update it.
+        if personal_info_data:
+            # Here we assume that instance.personal_info exists.
+            personal_info_instance = instance.personal_info
+            # You can either update each field manually:
+            for attr, value in personal_info_data.items():
+                setattr(personal_info_instance, attr, value)
+            personal_info_instance.save()
+            
+            # --- OR, alternatively, you can delegate to the nested serializer's update() method:
+            # serializer = PersonalInformationSerializer(personal_info_instance, data=personal_info_data, partial=True)
+            # serializer.is_valid(raise_exception=True)
+            # serializer.save()
+    
         return instance
 
 
@@ -82,10 +96,30 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
     def update(self, instance, validated_data):
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
+        # Pop the nested data out of the parent data.
+        personal_info_data = validated_data.pop('personal_info', None)
+        
+        # Update the main JobSeekerProfile fields.
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
         instance.save()
+    
+        # If there is nested personal information, update it.
+        if personal_info_data:
+            # Here we assume that instance.personal_info exists.
+            personal_info_instance = instance.personal_info
+            # You can either update each field manually:
+            for attr, value in personal_info_data.items():
+                setattr(personal_info_instance, attr, value)
+            personal_info_instance.save()
+            
+            # --- OR, alternatively, you can delegate to the nested serializer's update() method:
+            # serializer = PersonalInformationSerializer(personal_info_instance, data=personal_info_data, partial=True)
+            # serializer.is_valid(raise_exception=True)
+            # serializer.save()
+    
         return instance
+
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):

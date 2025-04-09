@@ -76,7 +76,7 @@ class JobSeekerProfile(models.Model):
 
     location = models.ForeignKey(
         City,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="شهر"
@@ -84,36 +84,10 @@ class JobSeekerProfile(models.Model):
 
     industry = models.ForeignKey(
         Industry,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         blank=True, 
         null=True, 
         verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
-    )
-
-    contact_email = models.EmailField(
-        blank=True,
-        verbose_name="ایمیل تماس"
-    )
-
-    contact_phone = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="شماره تماس"
-    )
-    
-    job_type_preference = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="نوع شغل مورد نظر",
-        help_text="مثلاً تمام‌وقت یا پاره‌وقت"
-    )
-
-    expected_salary = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        verbose_name="حقوق مورد انتظار"
     )
 
     created_at = models.DateTimeField(
@@ -173,7 +147,7 @@ class EmployerProfile(models.Model):
 
     location = models.ForeignKey(
         City,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="مکان"
@@ -181,21 +155,10 @@ class EmployerProfile(models.Model):
 
     industry = models.ForeignKey(
         Industry,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         blank=True, 
         null=True, 
         verbose_name="صنعت"  # صنعت مربوطه (مانند فناوری، سلامت)
-    )
-
-    contact_email = models.EmailField(
-        blank=True,
-        verbose_name="ایمیل تماس"
-    )
-
-    contact_phone = models.CharField(
-        max_length=20,
-        blank=True,
-        verbose_name="شماره تماس"
     )
 
     created_at = models.DateTimeField(

@@ -18,19 +18,13 @@ def create_user_profile(sender, instance, created, **kwargs):
             JobSeekerProfile.objects.create(
                 user=instance,
                 personal_info=personal_info,
-                kids_count=0,
                 headline="Undefined",       # مقدار پیش‌فرض، قابل تغییر
                 bio="",
                 profile_picture=None,
                 location=None,              # مقدار پیش‌فرض؛ می‌توانید آن را به یک City خاص تغییر دهید
-                industry="",
-                contact_email="",
-                contact_phone="",
+                industry=None,
                 website="",
                 linkedin_profile="",
-                resume="",                  # توجه: اگر فیلد resume الزامی است، یا اجازه blank را فعال کنید
-                job_type_preference="",
-                expected_salary=None
             )
         elif instance.user_type == "EM":  # Employer
             # ایجاد اطلاعات شخصی و کارت ملی با مقدار پیش‌فرض مناسب برای کارفرما
@@ -45,9 +39,7 @@ def create_user_profile(sender, instance, created, **kwargs):
                 bio="",
                 profile_picture=None,
                 location=None,
-                industry="",
-                contact_email="",
-                contact_phone=""
+                industry=None,
             )
         elif instance.user_type == "AD":  # Admin
             AdminProfile.objects.create(user=instance)
