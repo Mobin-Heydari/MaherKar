@@ -1,120 +1,132 @@
-from django.shortcuts import get_object_or_404
-from rest_framework.views import Response
-from rest_framework.viewsets import ModelViewSet
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404  # دریافت شیء از دیتابیس؛ در صورت عدم وجود با ارسال خطای 404
+from rest_framework.views import Response       # کلاس پاسخ برای ارسال داده‌ها به کلاینت
+from rest_framework.viewsets import ModelViewSet  # استفاده از ModelViewSet جهت فراهم‌سازی عملیات‌های CRUD
+from rest_framework import status                 # وارد کردن حالات HTTP (مانند 200, 400, 403, 201, 204)
+from rest_framework.permissions import IsAuthenticated  # محدود کردن دسترسی به کاربران احراز هویت شده
+
+# ایمپورت مدل‌های مرتبط صنعت
 from .models import IndustryCategory, Industry, Skill
+# ایمپورت سریالایزرهای مربوط به مدل‌ها
 from .serializers import IndustryCategorySerializer, IndustrySerializer, SkillSerializer
 
 
 
 
-
+# =================================================
+# ViewSet برای مدیریت دسته‌بندی‌های صنعت (IndustryCategory)
+# =================================================
 class IndustryCategoryViewSet(ModelViewSet):
     """
-    ViewSet for managing Industry Categories.
+    ویوست برای مدیریت دسته‌بندی‌های صنعت.
+    عملیات لیست، دریافت، ایجاد، به‌روزرسانی و حذف دسته‌بندی‌ها در این ویوست قابل انجام است.
     """
-    queryset = IndustryCategory.objects.all()
-    serializer_class = IndustryCategorySerializer, IndustrySerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'slug'
+    queryset = IndustryCategory.objects.all()  # دریافت تمامی دسته‌بندی‌ها از دیتابیس
+    # توجه: این خط به احتمال زیاد اشتباه است؛ در حال حاضر یک تاپل از دو سریالایزر دریافت شده است
+    # بهتر است تنها از یک سریالایزر (مثلاً IndustryCategorySerializer) استفاده شود!
+    serializer_class = IndustryCategorySerializer, IndustrySerializer  
+    permission_classes = [IsAuthenticated]  # فقط کاربران احراز هویت‌شده می‌توانند از این ویو استفاده کنند
+    lookup_field = 'slug'  # استفاده از فیلد slug به عنوان شناسه در URL‌ها
 
     def list(self, request, *args, **kwargs):
-        """List all categories."""
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        """لیست تمامی دسته‌بندی‌ها."""
+        queryset = self.get_queryset()  # دریافت queryset از متد پیش‌فرض
+        serializer = self.get_serializer(queryset, many=True)  # سریالایز کردن مجموعه دسته‌بندی‌ها
+        return Response(serializer.data, status=status.HTTP_200_OK)  # ارسال پاسخ موفقیت‌آمیز
 
     def retrieve(self, request, slug, *args, **kwargs):
-        """Retrieve a specific category by its slug."""
-        instance = get_object_or_404(IndustryCategory, slug=slug)
-        serializer = self.get_serializer(instance)
+        """دریافت یک دسته‌بندی خاص بر اساس اسلاگ."""
+        instance = get_object_or_404(IndustryCategory, slug=slug)  # بازیابی دسته‌بندی با اسلاگ مشخص شده
+        serializer = self.get_serializer(instance)  # سریالایز کردن نمونه دریافت شده
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        """Create a new category."""
-        if request.user.is_staff:
+        """ایجاد یک دسته‌بندی جدید."""
+        if request.user.is_staff:  # تنها کاربران ادمین (staff) مجاز به ایجاد دسته‌بندی هستند
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره دسته‌بندی جدید
                 return Response({'Message': 'Category created successfully.'}, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
 
     def update(self, request, slug, *args, **kwargs):
-        """Update an existing category."""
+        """به‌روزرسانی یک دسته‌بندی موجود."""
         if request.user.is_staff:
-            instance = get_object_or_404(IndustryCategory, slug=slug)
-            serializer = self.get_serializer(instance=instance, data=request.data, partial=True)
+            instance = get_object_or_404(IndustryCategory, slug=slug)  # دریافت دسته‌بندی جهت به‌روزرسانی
+            serializer = self.get_serializer(instance=instance, data=request.data, partial=True)  # به‌روز‌رسانی جزئی
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره تغییرات
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
         
     def destroy(self, request, name):
-        """Delete the existing category"""
+        """حذف یک دسته‌بندی موجود."""
         if request.user.is_staff:
-            category = get_object_or_404(IndustryCategory, name=name)
-            self.perform_destroy(category)
+            category = get_object_or_404(IndustryCategory, name=name)  # بازیابی دسته‌بندی بر اساس نام
+            self.perform_destroy(category)  # حذف دسته‌بندی
             return Response({"Massage": "The category deleted."}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"Massage": "Only admin users can dele datas"}, status=status.HTTP_403_FORBIDDEN)
 
 
-
-
+# =================================================
+# ViewSet برای مدیریت صنایع (Industry)
+# =================================================
 class IndustryViewSet(ModelViewSet):
     """
-    ViewSet for managing Industries.
+    ویوست برای مدیریت صنایع.
+    این ویوست امکان عملیات CRUD روی صنایع را فراهم می‌کند.
     """
-    queryset = Industry.objects.all()
-    serializer_class = IndustrySerializer
+    queryset = Industry.objects.all()  # دریافت تمامی صنایع از دیتابیس
+    serializer_class = IndustrySerializer  # استفاده از سریالایزر مربوط به مدل Industry
     permission_classes = [IsAuthenticated]
-    lookup_field = 'slug'
+    lookup_field = 'slug'  # استفاده از اسلاگ به عنوان شناسه در URL
 
     def list(self, request, *args, **kwargs):
-        """List all industries."""
+        """لیست تمامی صنایع."""
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, slug, *args, **kwargs):
-        """Retrieve a specific industry by its slug."""
+        """دریافت یک صنعت بر اساس اسلاگ."""
         instance = get_object_or_404(Industry, slug=slug)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, category_slug, *args, **kwargs):
-        """Create a new industry. Requires category slug."""
-
+        """
+        ایجاد یک صنعت جدید.
+        این متد به یک پارامتر category_slug نیاز دارد تا صنعت به یک دسته‌بندی مشخص متصل شود.
+        """
         if request.user.is_staff:
             if not category_slug:
                 return Response({'Error': 'category_slug is required for creating an industry.'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = self.get_serializer(data=request.data, context={'category_slug': category_slug})
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره صنعت جدید
                 return Response({'Message': 'Industry created successfully.'}, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
 
     def update(self, request, slug, *args, **kwargs):
-        """Update an existing industry."""
+        """به‌روزرسانی یک صنعت موجود."""
         if request.user.is_staff:
             instance = get_object_or_404(Industry, slug=slug)
             serializer = self.get_serializer(instance=instance, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره به‌روزرسانی
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
         
     def destroy(self, request, slug):
-        """Delete the existing industry"""
+        """حذف صنعت موجود."""
         if request.user.is_staff:
             industry = get_object_or_404(Industry, slug=slug)
             self.perform_destroy(industry)
@@ -123,56 +135,61 @@ class IndustryViewSet(ModelViewSet):
             return Response({"Massage": "Only admin users can dele datas"}, status=status.HTTP_403_FORBIDDEN)
 
 
-
+# =================================================
+# ViewSet برای مدیریت مهارت‌ها (Skill)
+# =================================================
 class SkillViewSet(ModelViewSet):
     """
-        ViewSet for managing Industries.
+    ویوست برای مدیریت مهارت‌ها.
+    این ویوست اجازه‌ی عملیات CRUD بر روی مهارت‌ها را می‌دهد.
     """
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
+    queryset = Skill.objects.all()  # دریافت تمامی مهارت‌ها
+    serializer_class = SkillSerializer  # سریالایزر مرتبط با مدل Skill
     permission_classes = [IsAuthenticated]
-    lookup_field = 'slug'
+    lookup_field = 'slug'  # استفاده از فیلد slug به عنوان شناسه در URL؛ اگرچه در متدهای retrieve از name استفاده شده است
 
     def list(self, request, *args, **kwargs):
-        """List all industries."""
+        """لیست تمامی مهارت‌ها."""
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, name, *args, **kwargs):
-        """Retrieve a specific industry by its name."""
+        """دریافت یک مهارت خاص بر اساس نام."""
         instance = get_object_or_404(Skill, name=name)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, industry_slug, *args, **kwargs):
-        """Create a new industry. Requires industry slug."""
+        """
+        ایجاد یک مهارت جدید.
+        این متد برای ایجاد مهارت نیاز به industry_slug دارد تا مهارت به یک صنعت مرتبط شود.
+        """
         if request.user.is_staff:
             if not industry_slug:
                 return Response({'Error': 'Skill is required for creating an industry.'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = self.get_serializer(data=request.data, context={'industry_slug': industry_slug})
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره مهارت جدید
                 return Response({'Message': 'Skill created successfully.'}, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
 
     def update(self, request, name, *args, **kwargs):
-        """Update an existing industry."""
-
+        """به‌روزرسانی یک مهارت موجود."""
         if request.user.is_staff:
             instance = get_object_or_404(Skill, name=name)
             serializer = self.get_serializer(instance=instance, data=request.data, partial=True)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # ذخیره به‌روزرسانی مهارت
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"Massage": "Only admin users can write datas"}, status=status.HTTP_403_FORBIDDEN)
     
     def destroy(self, request, name):
-        """Delete the existing skill"""
+        """حذف مهارتی موجود."""
         if request.user.is_staff:
             skill = get_object_or_404(Skill, name=name)
             self.perform_destroy(skill)
