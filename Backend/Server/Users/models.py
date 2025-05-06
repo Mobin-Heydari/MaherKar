@@ -90,24 +90,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name="وضعیت حساب کاربری",
     )
 
-    # فیلد ایمیل کاربر که به عنوان شناسه یکتا استفاده می‌شود
-    email = models.EmailField(
-        unique=True,  # تضمین یکتا بودن ایمیل
-        verbose_name="ایمیل",
-    )
-
     # فیلد شماره تلفن کاربر که به عنوان شناسه ورود و اطلاعات تماس استفاده خواهد شد
     phone = models.CharField(
         unique=True,  # شماره تلفن نباید تکراری باشد
         max_length=11,  # محدودیت تعداد ارقام شماره تلفن
         verbose_name="شماره تلفن",
-    )
-
-    # فیلد نام کاربری که باید یکتا باشد برای شناسایی کاربر در سیستم
-    username = models.CharField(
-        max_length=40,  # محدودیت تعداد حروف نام کاربری
-        unique=True,  # تضمین یکتا بودن نام کاربری
-        verbose_name="نام کاربری",
     )
 
     # فیلد نام و نام خانوادگی کاربر، که امکان خالی بودن نیز وجود دارد
@@ -146,7 +133,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "phone"
 
     # فیلدهای ضروری برای ایجاد کاربر جدید به جز فیلد اصلی
-    REQUIRED_FIELDS = ["username", "email", "full_name"]
+    REQUIRED_FIELDS = ["full_name",]
 
     # اختصاص شی مدیریت سفارشی جهت ایجاد، ویرایش و مدیریت کاربران
     objects = UserManager()

@@ -53,9 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id',                        # شناسه یکتا
             'id_card_info',              # اطلاعات کارت ملی کاربر به صورت تو در تو (nested)
-            'username',                  # نام کاربری
             'full_name',                 # نام و نام خانوادگی
-            'email',                     # ایمیل کاربر
             'phone',                     # شماره تلفن
             'user_type',                 # نوع کاربر (برای مثال: جوینده کار، کارفرما، پشتیبان یا مدیر)
             'status',                    # وضعیت حساب کاربری (فعال، تعلیق شده یا حذف شده)

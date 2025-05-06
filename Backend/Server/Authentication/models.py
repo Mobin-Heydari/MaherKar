@@ -97,17 +97,6 @@ class UserRegisterOTP(models.Model):
         verbose_name="ارجاع رمز یکبار مصرف"  # توضیح فیلد
     )
 
-    # فیلد برای ذخیره نام کاربری کاربر (شناسه ثبت‌نام)
-    username = models.CharField(
-        max_length=40,                 # حداکثر 40 کاراکتر
-        verbose_name="نام کاربری"      # توضیح فیلد به فارسی
-    )
-
-    # فیلد برای ذخیره ایمیل کاربر
-    email = models.EmailField(
-        verbose_name="ایمیل"          # توضیح فیلد
-    )
-
     # فیلد برای ذخیره شماره تلفن کاربر
     phone = models.CharField(
         verbose_name="شماره تلفن",     # توضیح فیلد
@@ -132,11 +121,8 @@ class UserRegisterOTP(models.Model):
         verbose_name="تکرار رمزعبور"    # توضیح فیلد
     )
 
-    # فیلدی برای ذخیره نوع کاربر؛ مقدار پیش‌فرض "JS" (مثلاً به معنای Job Seeker)
-    user_type = models.CharField(
-        max_length=2,                  # حداکثر 2 کاراکتر
-        default="JS"                   # مقدار پیش‌فرض
-    )
+    # فیلد ذخیره سازی نوع کاربر
+    user_type = models.CharField(max_length=2)
 
     # فیلد برای ذخیره زمان ایجاد رکورد ثبت‌نام (به صورت خودکار)
     created = models.DateTimeField(
