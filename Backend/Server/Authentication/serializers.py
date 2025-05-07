@@ -5,7 +5,7 @@ from rest_framework import validators               # وارد کردن ولید
 from rest_framework_simplejwt.tokens import RefreshToken  # برای تولید توکن‌های JWT جهت احراز هویت
 
 from Users.models import User, IdCardInFormation  # ایمپورت مدل‌های کاربر و اطلاعات کارت شناسایی از اپ Users
-from .models import OneTimePassword, UserRegisterOTP  # ایمپورت مدل‌های OTP و ثبت‌نام کاربر با OTP
+from .models import OneTimePassword, UserRegisterOTP, UserLoginOTP  # ایمپورت مدل‌های OTP و ثبت‌نام کاربر با OTP
 
 from random import randint  # برای تولید اعداد تصادفی (به عنوان کدهای OTP)
 
@@ -13,7 +13,7 @@ from random import randint  # برای تولید اعداد تصادفی (به 
 # ========================================================
 # سریالایزر ورود کاربران (LoginSerializer)
 # ========================================================
-class LoginSerializer(serializers.Serializer):
+class PasswordLoginSerializer(serializers.Serializer):
     """
     سریالایزر برای اعتبارسنجی شماره تلفن و رمز عبور هنگام ورود.
     """
@@ -274,3 +274,96 @@ class UserRegisterSerializer(serializers.Serializer):
                 'access': str(refresh.access_token),
             }
         }
+# ----------------------------------------------------------------
+# سریالایزر ورود کاربر با OTP (UserLoginOneTimePasswordSerializer)
+# ----------------------------------------------------------------
+class UserLoginOneTimePasswordSerializer(serializers.Serializer):
+
+    # تعریف فیلد شماره تلفن که اجباری و فقط جهت ارسال داده است (write_only)
+    phone = serializers.CharField(required=True, write_only=True)
+
+    def validate_phone(self, value):
+        """
+        اعتبارسنجی فیلد تلفن:
+          - اطمینان حاصل می‌کند که شماره تلفن ارائه شده مقدار None نباشد.
+        """
+        # اگر مقدار شماره تلفن None باشد، خطای اعتبارسنجی صادر می‌شود
+        if value is None:
+            raise serializers.ValidationError('شماره تلفن الزامی است')
+        # در صورت معتبر بودن، مقدار شماره تلفن برگردانده می‌شود
+        return value
+
+    def validate(self, atters):
+        """
+        اعتبارسنجی کلی داده‌های ورودی:
+          - بررسی می‌کند که شماره تلفن وارد شده در پایگاه داده موجود باشد.
+        """
+        # بررسی می‌کنیم که آیا کاربری با شماره تلفن وارد شده در دیتابیس موجود است یا خیر
+        if User.objects.filter(phone=atters['phone']).exists():
+            # در صورت وجود، داده‌های معتبر برگردانده می‌شوند
+            return atters
+        else:
+            # در غیر این صورت، پیام خطا صادر می‌شود
+            raise serializers.ValidationError('شماره تلفن موجود نیست')
+
+    def create(self, validated_data):
+        # تولید یک کد تصادفی 6 رقمی برای OTP
+        code = randint(100000, 999999)
+        # تولید یک رشته تصادفی به عنوان توکن OTP با طول 100 کاراکتر
+        token = get_random_string(100)
+        
+        # ایجاد رکورد جدید OTP در دیتابیس با استفاده از توکن و کد تولید شده
+        otp = OneTimePassword.objects.create(
+            token=token,
+            code=code
+        )
+        # ذخیره‌سازی اطلاعات OTP در دیتابیس (گرچه create به‌طور خودکار ذخیره می‌کند)
+        otp.save()
+        # فراخوانی متد get_expiration جهت تعیین زمان انقضای OTP
+        otp.get_expiration()
+        
+        # واکشی کاربر مربوط به شماره تلفن وارد شده
+        user = User.objects.get(phone=validated_data['phone'])
+        
+        # ایجاد رکورد جدید ورود با OTP برای کاربر جهت ثبت‌سازی عملیات ورود
+        user_login_otp = UserLoginOTP.objects.create(
+            otp=otp,
+            user=user,
+            phone=validated_data['phone']
+        )
+        # ذخیره‌سازی اطلاعات مربوط به ورود OTP
+        user_login_otp.save()
+
+        # برگرداندن اطلاعات مورد نیاز شامل شماره تلفن، توکن OTP و کد OTP
+        return {'phone': user_login_otp.phone, 'token': token, 'code': code}
+
+
+
+
+# ----------------------------------------------------------------
+# سریالایزر تایید ورود با OTP (UserLoginValidateOneTimePasswordSerializer)
+# ----------------------------------------------------------------
+class UserLoginValidateOneTimePasswordSerializer(serializers.Serializer):
+
+    # تعریف فیلد کد OTP با محدودیت دقیقا 6 کاراکتر (min_length و max_length برابر 6)
+    code = serializers.CharField(max_length=6, min_length=6, required=True)
+
+    def validate(self, attrs):
+        # بازیابی توکن OTP از context که توسط ویو ارسال شده است
+        otp_token = self.context.get('otp_token')
+        
+        # واکشی شیء OTP مرتبط با توکن دریافتی؛ اگر OTP با توکن داده‌شده وجود نداشته باشد، خطا صادر می‌شود
+        otp = OneTimePassword.objects.get(token=otp_token)
+
+        # بررسی وضعیت اعتبار OTP؛ در صورتی که OTP فعال (ACT) باشد، ادامه ارزیابی انجام می‌شود
+        if otp.status_validation() == 'ACT':
+            # مطابقت کد وارد شده توسط کاربر با کد ذخیره شده در OTP
+            if otp.code == attrs['code']:
+                # در صورت تطابق، داده‌های ورودی به عنوان نتایج معتبر برگردانده می‌شود
+                return attrs
+            else:
+                # در غیر این صورت، خطای اعتبارسنجی مربوط به فیلد "code" صادر می‌شود
+                raise serializers.ValidationError({'code': 'Invalid OTP code.'})
+        else:
+            # اگر OTP به عنوان غیر فعال شناخته شود، پیام خطا ارسال می‌شود
+            raise serializers.ValidationError('Inactive OTP')
