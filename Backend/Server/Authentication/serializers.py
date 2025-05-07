@@ -102,21 +102,16 @@ class UserRegisterOneTimePasswordSerializer(serializers.ModelSerializer):
         help_text="نام کامل خود را وارد کنید"  # متن راهنما برای فیلد نام کامل
     )
 
-    # تعریف فیلد رمز عبور همراه با اعتبارسنجی
-    password = serializers.CharField(
-        required=True,  # رمز عبور الزامی است
-        write_only=True,  # رمز عبور در پاسخ برگردانده نمی‌شود
-        help_text="رمز عبور را وارد کنید (8-16 کاراکتر)"  # متن راهنما برای فیلد رمز عبور
-    )
-
-    # تعریف فیلد تایید رمز عبور
-    password_conf = serializers.CharField(
-        required=True,  # تایید رمز عبور الزامی است
-        write_only=True,  # تایید رمز عبور در پاسخ برگردانده نمی‌شود
-        help_text="رمز عبور خود را تایید کنید (8-16 کاراکتر)"  # متن راهنما برای فیلد تایید رمز عبور
-    )
-
     user_type = serializers.CharField(required=True, write_only=True)  # تعریف فیلد نوع کاربر
+
+    phone = serializers.CharField(
+        validators=[
+            validators.UniqueValidator(queryset=User.objects.all())  # Ensure phone is unique in User model
+        ],
+        required=True,  # phone is required
+        help_text="Enter a unique phone",  # Help text for the phone field
+    )
+
 
     class Meta:
         model = UserRegisterOTP
@@ -125,26 +120,6 @@ class UserRegisterOneTimePasswordSerializer(serializers.ModelSerializer):
         read_only_fields = ['otp']  
         # فیلد otp به صورت فقط خواندنی است؛ در زمان ثبت نام به صورت خودکار پر می‌شود
 
-    # اعتبارسنجی فیلد رمز عبور
-    def validate_password(self, value):
-        # بررسی می‌کند آیا طول رمز عبور در محدوده مجاز (8-16 کاراکتر) قرار دارد
-        if len(value) < 8 or len(value) > 16:
-            raise serializers.ValidationError('رمز عبور باید حداقل 8 و حداکثر 16 کاراکتر باشد')
-        return value
-
-    # اعتبارسنجی فیلد تایید رمز عبور
-    def validate_password_conf(self, value):
-        # بررسی می‌کند آیا طول تایید رمز عبور در محدوده مجاز (8-16 کاراکتر) قرار دارد
-        if len(value) < 8 or len(value) > 16:
-            raise serializers.ValidationError('رمز عبور باید حداقل 8 و حداکثر 16 کاراکتر باشد')
-        return value
-
-    # اعتبارسنجی فیلد نام کاربری
-    def validate_username(self, value):
-        # بررسی می‌کند آیا طول نام کاربری در محدوده مجاز (3-20 کاراکتر) قرار دارد
-        if len(value) < 3 or len(value) > 20:
-            raise serializers.ValidationError('نام کاربری باید بین 3 تا 20 کاراکتر باشد')
-        return value
 
     # اعتبارسنجی فیلد نام کامل
     def validate_full_name(self, value):
@@ -160,14 +135,6 @@ class UserRegisterOneTimePasswordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("نوع کاربر باید یکی از موارد زیر باشد: EM, JS.")
         return value
 
-    # اعتبارسنجی کل serializer
-    def validate(self, attrs):
-        # بررسی می‌کند آیا رمز عبور و تایید رمز عبور یکسان هستند
-        if attrs['password'] != attrs['password_conf']:
-            raise serializers.ValidationError('رمز عبورها مطابقت ندارند')
-        if len(attrs['password']) < 8 or len(attrs['password']) > 16:
-            raise serializers.ValidationError('رمز عبور باید بین 8 تا 16 کاراکتر باشد')
-        return attrs
 
 
     def create(self, validated_data):
@@ -195,9 +162,7 @@ class UserRegisterOneTimePasswordSerializer(serializers.ModelSerializer):
         user_register_otp = UserRegisterOTP.objects.create(
             otp=otp,
             phone=validated_data['phone'],
-            password=validated_data['password'],
             full_name=validated_data['full_name'],
-            password_conf=validated_data['password_conf'],
             user_type=validated_data['user_type']
         )
 
@@ -207,9 +172,9 @@ class UserRegisterOneTimePasswordSerializer(serializers.ModelSerializer):
 
 
 # ========================================================
-# سریالایزر تایید ثبت‌نام کاربران با OTP (UserRegisterSerializer)
+# سریالایزر تایید ثبت‌نام کاربران با OTP (UserRegisterValidateOneTimePasswordSerializer)
 # ========================================================
-class UserRegisterSerializer(serializers.Serializer):
+class UserRegisterValidateOneTimePasswordSerializer(serializers.Serializer):
 
     code = serializers.CharField(max_length=6, min_length=6, required=True)  
     # فیلد کد OTP؛ باید دقیقا ۶ کاراکتر باشد
@@ -251,9 +216,11 @@ class UserRegisterSerializer(serializers.Serializer):
 
         id_card_info = IdCardInFormation.objects.create()
 
+        password = get_random_string(length=16)
+
         user = User.objects.create_user(
             phone=user_register_otp.phone,
-            password=user_register_otp.password,
+            password=password,
             full_name=user_register_otp.full_name,
             user_type=user_register_otp.user_type
         )
@@ -267,13 +234,16 @@ class UserRegisterSerializer(serializers.Serializer):
         return {
             'user': {
                 'phone': user.phone,
-                'user_type': user.user_type
+                'user_type': user.user_type,
+                'password': password
             },
             'tokens': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
         }
+    
+
 # ----------------------------------------------------------------
 # سریالایزر ورود کاربر با OTP (UserLoginOneTimePasswordSerializer)
 # ----------------------------------------------------------------
@@ -336,7 +306,6 @@ class UserLoginOneTimePasswordSerializer(serializers.Serializer):
 
         # برگرداندن اطلاعات مورد نیاز شامل شماره تلفن، توکن OTP و کد OTP
         return {'phone': user_login_otp.phone, 'token': token, 'code': code}
-
 
 
 

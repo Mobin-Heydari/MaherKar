@@ -105,22 +105,10 @@ class UserRegisterOTP(models.Model):
         max_length=11                  # حداکثر 11 کاراکتر
     )
 
-    # فیلد برای ذخیره هش رمز عبور کاربر
-    password = models.CharField(
-        max_length=128,                # حداکثر طول هش رمز عبور
-        verbose_name="هش رمز عبور"     # توضیح فیلد
-    )
-
     # فیلد برای ذخیره نام کامل کاربر
     full_name = models.CharField(
         max_length=255,                # حداکثر 255 کاراکتر
         verbose_name="نام و نام خانوادگی"  # توضیح فیلد
-    )
-
-    # فیلدی برای ذخیره تکرار رمز عبور، جهت اعتبارسنجی در فرایند ثبت‌نام
-    password_conf = models.CharField(
-        max_length=255,                # حداکثر طول رشته
-        verbose_name="تکرار رمزعبور"    # توضیح فیلد
     )
 
     # فیلد ذخیره سازی نوع کاربر

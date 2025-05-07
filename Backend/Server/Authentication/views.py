@@ -11,7 +11,7 @@ from Users.models import User  # ایمپورت مدل کاربر از برنا�
 from .serializers import (  
     PasswordLoginSerializer,
     UserRegisterOneTimePasswordSerializer,
-    UserRegisterSerializer,
+    UserRegisterValidateOneTimePasswordSerializer,
     UserLoginOneTimePasswordSerializer,
     UserLoginValidateOneTimePasswordSerializer
 )  # ایمپورت سریالایزرهای مربوط به ورود و ثبت‌نام
@@ -80,7 +80,7 @@ class LoginAPIView(APIView):
 # ----------------------------------------------------------------
 # ویو تولید رمز یکبار مصرف ثبت‌نام (UserRegisterOtpAPIView)
 # ----------------------------------------------------------------
-class UserRegisterOtpAPIView(APIView):
+class UserRegisterOneTimePasswordAPIView(APIView):
     """
     ویو برای تولید رمز یکبار مصرف جهت ثبت‌نام.
     این ویو برای کاربران غیر احراز هویت شده در دسترس است.
@@ -134,7 +134,7 @@ class UserRegisterOtpAPIView(APIView):
 # ----------------------------------------------------------------
 # ویو تایید ثبت‌نام کاربران با OTP (UserRegisterOtpValidateAPIView)
 # ----------------------------------------------------------------
-class UserRegisterOtpValidateAPIView(APIView):
+class UserRegisterValidateOneTimePasswordAPIView(APIView):
     """
     ویو جهت ثبت‌نام نهایی کاربر با استفاده از تایید OTP.
     کاربر با ارسال کد OTP و همراه با توکن OTP، ثبت‌نام نهایی انجام می‌دهد.
@@ -154,7 +154,7 @@ class UserRegisterOtpValidateAPIView(APIView):
             otp = get_object_or_404(OneTimePassword, token=token)
             if otp:
                 if otp.registration_otps:  # بررسی وجود ثبت‌نام مرتبط با OTP
-                    serializer = UserRegisterSerializer(data=request.data, context={'otp_token': otp.token})
+                    serializer = UserRegisterValidateOneTimePasswordSerializer(data=request.data, context={'otp_token': otp.token})
                     if serializer.is_valid(raise_exception=True):
                         user_data = serializer.create(
                             validated_data=serializer.validated_data, 
@@ -165,7 +165,7 @@ class UserRegisterOtpValidateAPIView(APIView):
                                 'Detail': {
                                     'Message': 'User created successfully',
                                     'User': user_data['user'],
-                                    'Token': user_data['tokens']
+                                    'Token': user_data['tokens'],
                                 }
                             },
                             status=status.HTTP_201_CREATED
