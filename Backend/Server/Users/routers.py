@@ -55,8 +55,8 @@ class UserRouter(routers.DefaultRouter):
             path('', include([
                 # تعریف URL خالی جهت فراخوانی متد list در UserViewSet (برای دریافت لیست کاربران)
                 path('', UserViewSet.as_view({'get': 'list'})),
-                # تعریف URL شامل پارامتر username (رشته‌ای) برای دریافت اطلاعات یک کاربر خاص
-                path('<str:username>/', include([
+                # تعریف URL شامل پارامتر pk (عددی) برای دریافت اطلاعات یک کاربر خاص
+                path('<int:pk>/', include([
                     # فراخوانی متد GET برای دریافت اطلاعات جزئیات کاربر
                     path('', UserViewSet.as_view({'get': 'retrieve'})),
                 ])),

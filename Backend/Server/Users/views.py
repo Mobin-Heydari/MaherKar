@@ -74,7 +74,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()  # تعریف queryset شامل تمامی نمونه‌های مدل User از دیتابیس
     serializer_class = UserSerializer  # تعیین سریالایزر مرتبط با مدل User جهت تبدیل داده‌ها به JSON و بالعکس
     permission_classes = [IsAuthenticated]  # اعمال محدودیت: تنها کاربران احراز هویت شده می‌توانند به این ویو دسترسی داشته باشند
-    lookup_field = 'username'  # استفاده از فیلد username به عنوان شناسه اصلی هنگام عملیات بازیابی (retrieve)
+    lookup_field = 'pk'  # استفاده از فیلد pk به عنوان شناسه اصلی هنگام عملیات بازیابی (retrieve)
 
     # بازنویسی متد list برای مدیریت درخواست‌های GET جهت دریافت لیست کاربران
     def list(self, request, *args, **kwargs):
@@ -96,15 +96,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
     # تعریف متد retrieve جهت دریافت اطلاعات یک کاربر بر اساس نام کاربری
-    def retrieve(self, request, username, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         مدیریت درخواست‌های GET برای دریافت اطلاعات یک کاربر
         """
 
         # بررسی می‌کند که آیا کاربر دارای دسترسی استاف بوده و یا نام کاربری درخواست شده همان کاربری است که درخواست را ارسال کرده است
-        if request.user.is_staff or request.user.username == username:
+        if request.user.is_staff or request.user.id == pk:
             # تلاش برای دریافت نمونه کاربر با استفاده از نام کاربری؛ در صورت عدم یافتن، خطای 404 ارسال می‌شود
-            queryset = get_object_or_404(User, username=username)
+            queryset = get_object_or_404(User, id=pk)
             # سریالایز کردن نمونه کاربر دریافت‌شده به صورت مناسب جهت ارسال به کلاینت
             serializer = self.get_serializer(queryset)
             # ارسال داده‌های سریالایز شده به عنوان پاسخ

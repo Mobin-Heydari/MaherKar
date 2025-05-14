@@ -25,7 +25,7 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
     تنها کاربران احراز هویت شده مجاز به دسترسی هستند.
     """
     permission_classes = [IsAuthenticated]  # تنها کاربران احراز هویت شده دسترسی دارند
-    lookup_field = 'user__username'  # جستجو بر اساس نام کاربری در فیلد ارتباطی user
+    lookup_field = 'pk'  # جستجو بر اساس نام کاربری در فیلد ارتباطی user
 
     def list(self, request, *args, **kwargs):
         """
@@ -43,14 +43,14 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    def retrieve(self, request, user__username, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         دریافت اطلاعات یک پروفایل جوینده کار بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به مشاهده اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
+        if request.user.is_staff or request.user.username == pk:
             # در صورت دسترسی، پروفایل مورد نظر بازیابی می‌شود
-            profile = get_object_or_404(JobSeekerProfile, user__username=user__username)
+            profile = get_object_or_404(JobSeekerProfile, user__id=pk)
             serializer = JobSeekerProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -60,14 +60,14 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
     
-    def update(self, request, user__username):
+    def update(self, request, pk):
         """
         به‌روزرسانی اطلاعات یک پروفایل جوینده کار بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به ویرایش اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
+        if request.user.is_staff or request.user.username == pk:
             # دریافت پروفایل به‌منظور به‌روزرسانی
-            profile = get_object_or_404(JobSeekerProfile, user__username=user__username)
+            profile = get_object_or_404(JobSeekerProfile, user__id=pk)
             # سریالایزر با داده‌های ارسالی برای به‌روزرسانی نمونه مربوطه
             serializer = JobSeekerProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
@@ -93,7 +93,7 @@ class EmployerProfileViewSet(viewsets.ViewSet):
     تنها کاربران احراز هویت شده دسترسی دارند.
     """
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__username'  # استفاده از نام کاربری برای جستجو
+    lookup_field = 'pk'  # استفاده از نام کاربری برای جستجو
 
     def list(self, request, *args, **kwargs):
         """
@@ -109,13 +109,13 @@ class EmployerProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    def retrieve(self, request, user__username, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         دریافت اطلاعات یک پروفایل کارفرما بر اساس نام کاربری.
         تنها مدیر یا خود کاربر قادر به مشاهده اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
-            profile = get_object_or_404(EmployerProfile, user__username=user__username)
+        if request.user.is_staff or request.user.username == pk:
+            profile = get_object_or_404(EmployerProfile, user__id=pk)
             serializer = EmployerProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -124,13 +124,13 @@ class EmployerProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    def update(self, request, user__username):
+    def update(self, request, pk):
         """
         به‌روزرسانی اطلاعات یک پروفایل کارفرما بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
-            profile = get_object_or_404(EmployerProfile, user__username=user__username)
+        if request.user.is_staff or request.user.username == pk:
+            profile = get_object_or_404(EmployerProfile, user__id=pk)
             serializer = EmployerProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -153,7 +153,7 @@ class AdminProfileViewSet(viewsets.ViewSet):
     دسترسی فقط برای مدیران ارشد (superuser) مجاز است.
     """
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__username'  # جستجو بر اساس نام کاربری
+    lookup_field = 'pk'  # جستجو بر اساس نام کاربری
 
     def list(self, request, *args, **kwargs):
         """
@@ -170,13 +170,13 @@ class AdminProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    def retrieve(self, request, user__username, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         دریافت اطلاعات یک پروفایل مدیر بر اساس نام کاربری.
         فقط مدیران ارشد قادر به مشاهده هستند.
         """
         if request.user.is_superuser:
-            profile = get_object_or_404(AdminProfile, user__username=user__username)
+            profile = get_object_or_404(AdminProfile, user__id=pk)
             serializer = AdminProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -185,13 +185,13 @@ class AdminProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-    def update(self, request, user__username):
+    def update(self, request, pk):
         """
         به‌روزرسانی اطلاعات یک پروفایل مدیر بر اساس نام کاربری.
         مدیر سیستم یا خود کاربر مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
-            profile = get_object_or_404(AdminProfile, user__username=user__username)
+        if request.user.is_staff or request.user.username == pk:
+            profile = get_object_or_404(AdminProfile, user__id=pk)
             serializer = AdminProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -214,7 +214,7 @@ class SupportProfileViewSet(viewsets.ViewSet):
     دسترسی به این بخش فقط برای کاربران استاف یا خود صاحب پروفایل مجاز است.
     """
     permission_classes = [IsAuthenticated]
-    lookup_field = 'user__username'  # جستجو بر اساس نام کاربری
+    lookup_field = 'pk'  # جستجو بر اساس نام کاربری
 
     def list(self, request, *args, **kwargs):
         """
@@ -230,12 +230,12 @@ class SupportProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
     
-    def retrieve(self, request, user__username, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         دریافت اطلاعات یک پروفایل پشتیبان بر اساس نام کاربری.
         """
         if request.user.is_staff:
-            profile = get_object_or_404(SupportProfile, user__username=user__username)
+            profile = get_object_or_404(SupportProfile, user__id=pk)
             serializer = SupportProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -244,13 +244,13 @@ class SupportProfileViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
     
-    def update(self, request, user__username):
+    def update(self, request, pk):
         """
         به‌روزرسانی اطلاعات یک پروفایل پشتیبان بر اساس نام کاربری.
         تنها کاربران استاف یا خود صاحب پروفایل مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == user__username:
-            profile = get_object_or_404(SupportProfile, user__username=user__username)
+        if request.user.is_staff or request.user.username == pk:
+            profile = get_object_or_404(SupportProfile, user__id=pk)
             serializer = SupportProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()
