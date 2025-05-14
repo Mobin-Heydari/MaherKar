@@ -91,8 +91,12 @@ class UserViewSet(viewsets.ModelViewSet):
             # بازگرداندن داده‌های سریالایز شده به عنوان پاسخ به کلاینت
             return Response(serializer.data)
         else:
-            # در صورت عدم دسترسی مجاز، پاسخ خطای 403 با پیام مناسب ارسال می‌شود
-            return Response({"Massage": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+            # فیلتر کردن آیدیه کاربر برای نمایش اطلاعات کاربری خودش
+            queryset = self.get_queryset().filter(id=request.user.id)
+            # سریالایز کردن queryset
+            serializer = self.get_serializer(queryset)
+            # بازگرداندن داده‌های سریالایز شده به عنوان پاسخ به کلاینت
+            return Response(serializer.data)
 
 
     # تعریف متد retrieve جهت دریافت اطلاعات یک کاربر بر اساس نام کاربری
