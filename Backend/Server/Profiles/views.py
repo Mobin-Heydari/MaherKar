@@ -36,6 +36,10 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
             queryset = JobSeekerProfile.objects.all()  # دریافت تمامی پروفایل‌های جوینده کار
             serializer = JobSeekerProfileSerializer(queryset, many=True)
             return Response(serializer.data)  # برگرداندن لیست پروفایل‌ها در صورت موفقیت
+        elif request.user.user_type == "JS":
+            instance = JobSeekerProfile.objects.get(user=request.user)
+            serializer = JobSeekerProfileSerializer(instance)
+            return Response(serializer.data)
         else:
             # ارسال پیام خطای دسترسی در صورت عدم اجازه
             return Response(
@@ -102,6 +106,10 @@ class EmployerProfileViewSet(viewsets.ViewSet):
         if request.user.is_staff:
             queryset = EmployerProfile.objects.all()  # دریافت تمام پروفایل‌های کارفرما
             serializer = EmployerProfileSerializer(queryset, many=True)
+            return Response(serializer.data)
+        elif request.user.user_type == "EM":
+            instance = EmployerProfile.objects.get(user=request.user)
+            serializer = EmployerProfileSerializer(instance)
             return Response(serializer.data)
         else:
             return Response(
@@ -223,6 +231,10 @@ class SupportProfileViewSet(viewsets.ViewSet):
         if request.user.is_staff:
             queryset = SupportProfile.objects.all()  # دریافت تمام پروفایل‌های پشتیبان
             serializer = SupportProfileSerializer(queryset, many=True)
+            return Response(serializer.data)
+        elif request.user.user_type == "SU":
+            instance = SupportProfile.objects.get(user=request.user)
+            serializer = SupportProfileSerializer(instance)
             return Response(serializer.data)
         else:
             return Response(
