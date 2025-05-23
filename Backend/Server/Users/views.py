@@ -91,10 +91,8 @@ class UserViewSet(viewsets.ModelViewSet):
             # بازگرداندن داده‌های سریالایز شده به عنوان پاسخ به کلاینت
             return Response(serializer.data)
         else:
-            # فیلتر کردن آیدیه کاربر برای نمایش اطلاعات کاربری خودش
-            queryset = self.get_queryset().filter(id=request.user.id)
-            # سریالایز کردن queryset
-            serializer = self.get_serializer(queryset)
+            # سریالایز کردن user
+            serializer = self.get_serializer(request.user)
             # بازگرداندن داده‌های سریالایز شده به عنوان پاسخ به کلاینت
             return Response(serializer.data)
 
