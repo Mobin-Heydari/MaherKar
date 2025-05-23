@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404  # تابعی برای دریافت شیء یا ارسال خطای 404 در صورت عدم وجود
 from rest_framework import viewsets  # استفاده از ویوست‌های مبتنی بر کلاس در Django REST Framework
-from rest_framework.response import Response  # کلاس پاسخ جهت ارسال داده‌ها به کلاینت
+from rest_framework.views import Response, APIView  # کلاس پاسخ جهت ارسال داده‌ها به کلاینت
 from rest_framework import status  # وضعیت‌های HTTP جهت ارسال پاسخ‌های مناسب (مثلاً 403 یا 400)
 from rest_framework.permissions import IsAuthenticated  # محدود کردن دسترسی به کاربران احراز هویت شده
 
@@ -274,3 +274,42 @@ class SupportProfileViewSet(viewsets.ViewSet):
                 {"error": "شما اجازه ویرایش این محتوا را ندارید"},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+
+class UserProfileAPIView(APIView):
+    """
+    نقطه فیکس واحد برای دریافت پروفایل کاربر احراز هویت شده بر اساس نوع کاربر:
+      - 'JS' : بازگردانی پروفایل جوینده کار (JobSeekerProfile)
+      - 'EM' : بازگردانی پروفایل کارفرما (EmployerProfile)
+      - 'AD' : بازگردانی پروفایل مدیر (AdminProfile یا bAdminProfile)
+      - 'SU' : بازگردانی پروفایل پشتیبان (SupportProfile)
+    """
+    permission_classes = [IsAuthenticated]  # فقط کاربران احراز هویت شده اجازه دسترسی دارند
+
+    def get(self, request, *args, **kwargs):
+        # نگاشت نوع کاربر به مدل پروفایل و کلاس سریالایزر مربوطه
+        mapping = {
+            "JS": (JobSeekerProfile, JobSeekerProfileSerializer),
+            "EM": (EmployerProfile, EmployerProfileSerializer),
+            "AD": (AdminProfile, AdminProfileSerializer),
+            "SU": (SupportProfile, SupportProfileSerializer),
+        }
+
+        # دریافت نوع کاربر از شیء کاربر احراز هویت شده
+        user_type = request.user.user_type
+        # گرفتن مدل پروفایل و سریالایزر مطابق با نوع کاربر؛ در صورت عدم وجود، (None, None) باز می‌گرداند
+        profile_model, serializer_class = mapping.get(user_type, (None, None))
+
+        # در صورتی که مدل پروفایل یا کلاس سریالایزر یافت نشود، پیام خطای مربوط به نوع کاربر نامعتبر ارسال می‌شود
+        if profile_model is None or serializer_class is None:
+            return Response(
+                {"error": "نوع کاربر نامعتبر است."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # دریافت نمونه پروفایل کاربری مطابق با مدل مربوطه؛ در صورت عدم وجود، 404 بازگردانده می‌شود.
+        profile_instance = get_object_or_404(profile_model, user=request.user)
+        # سریالایز کردن نمونه پروفایل
+        serializer = serializer_class(profile_instance)
+        # بازگرداندن داده‌های سریالایز شده با وضعیت HTTP 200 OK
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,6 +1,6 @@
 from django.urls import path, include  # ایمپورت توابع path و include برای تعریف الگوهای URL
 from .routers import JobSeekerRouter, EmployerRouter, AdminRouter, SupportRouter  # ایمپورت روترهای سفارشی مربوط به پروفایل‌های مختلف
-
+from . import views
 
 
 app_name = "Profiles"  # تعریف namespace برای این اپلیکیشن جهت جداسازی URLها در پروژه
@@ -25,4 +25,6 @@ urlpatterns = [
     path('admins/', include(admin_router.get_urls())),
     # مسیر 'supports/' تمامی درخواست‌های مربوط به پشتیبان‌ها (Support) را مدیریت می‌کند
     path('supports/', include(support_router.get_urls())),
+    # مسیر 'me/' برای دریافت اطلاعات پروفایل همه ی انواع کاربر هاست.
+    path('me/', views.UserProfileAPIView.as_view(), name="me")
 ]
