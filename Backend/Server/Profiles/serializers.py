@@ -51,7 +51,6 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
             'id',                # شناسه یکتا
             'user',              # شناسه کاربر
             'personal_info',     # اطلاعات شخصی (به صورت تو در تو)
-            'id_card_info',      # اطلاعات کارت ملی (در صورت وجود)
             'headline',          # عنوان شغلی
             'bio',               # بیوگرافی یا توضیح مختصر درباره کاربر
             'profile_picture',   # تصویر پروفایل
@@ -116,7 +115,6 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
             'user',             # شناسه کاربر
             'company_name',     # نام شرکت یا سازمان
             'personal_info',    # اطلاعات شخصی کارفرما (به صورت تو در تو)
-            'id_card_info',     # اطلاعات کارت ملی (در صورت وجود)
             'bio',              # توضیحات یا بیوگرافی شرکت
             'profile_picture',  # تصویر پروفایل شرکت
             'location',         # مکان یا شهر شرکت
