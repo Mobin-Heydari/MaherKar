@@ -47,21 +47,7 @@ class JobSeekerProfileSerializer(serializers.ModelSerializer):
         # تعیین مدل مرتبط
         model = JobSeekerProfile
         # فیلدهایی که در خروجی JSON گنجانده می‌شوند
-        fields = [
-            'id',                # شناسه یکتا
-            'user',              # شناسه کاربر
-            'personal_info',     # اطلاعات شخصی (به صورت تو در تو)
-            'headline',          # عنوان شغلی
-            'bio',               # بیوگرافی یا توضیح مختصر درباره کاربر
-            'profile_picture',   # تصویر پروفایل
-            'location',          # شهر یا مکان محل سکونت
-            'industry',          # صنعتی که کاربر در آن فعالیت می‌کند
-            'contact_email',     # ایمیل تماس (در صورت تعریف)
-            'job_type_preference',   # ترجیح شغلی (در صورت تعریف)
-            'expected_salary',   # حقوق مورد انتظار
-            'created_at',        # تاریخ ایجاد پروفایل
-            'updated_at'         # تاریخ به‌روزرسانی پروفایل
-        ]
+        fields = '__all__'
         # برخی فیلدها تنها خواندنی هستند
         read_only_fields = ['created_at', 'updated_at']
 
@@ -110,19 +96,7 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployerProfile
-        fields = [
-            'id',               # شناسه یکتا
-            'user',             # شناسه کاربر
-            'company_name',     # نام شرکت یا سازمان
-            'personal_info',    # اطلاعات شخصی کارفرما (به صورت تو در تو)
-            'bio',              # توضیحات یا بیوگرافی شرکت
-            'profile_picture',  # تصویر پروفایل شرکت
-            'location',         # مکان یا شهر شرکت
-            'industry',         # صنعتی که شرکت در آن فعالیت می‌کند
-            'contact_email',    # ایمیل تماس شرکت
-            'created_at',       # تاریخ ایجاد پروفایل
-            'updated_at'        # تاریخ به‌روزرسانی پروفایل
-        ]
+        fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
     # متد update جهت به‌روز‌رسانی پروفایل کارفرما، مشابه به پیاده‌سازی در پروفایل جوینده کار
@@ -161,12 +135,7 @@ class AdminProfileSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = AdminProfile
-        fields = [
-            'id',          # شناسه یکتا
-            'user',        # شناسه کاربر مربوط به مدیر
-            'created_at',  # تاریخ ایجاد پروفایل مدیر
-            'updated_at'   # تاریخ به‌روزرسانی پروفایل مدیر
-        ]
+        fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']
 
 
@@ -181,10 +150,5 @@ class SupportProfileSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = SupportProfile
-        fields = [
-            'id',          # شناسه یکتا
-            'user',        # شناسه کاربر مربوط به پشتیبان
-            'created_at',  # تاریخ ایجاد پروفایل پشتیبان
-            'updated_at'   # تاریخ به‌روزرسانی پروفایل پشتیبان
-        ]
+        fields = '__all__'
         read_only_fields = ['created_at', 'updated_at']

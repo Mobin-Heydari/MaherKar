@@ -30,10 +30,8 @@ class JobSeekerRouter(routers.DefaultRouter):
                 # مسیر خالی جهت فراخوانی متد list در JobSeekerProfileViewSet (دریافت لیست پروفایل‌ها)
                 path('', JobSeekerProfileViewSet.as_view({'get': 'list'})),
                 # مسیر دارای پارامتر pk جهت دریافت جزئیات یک پروفایل خاص
-                path('<int:pk>/', include([
-                    # در این مسیر، متد GET برای دریافت جزئیات (retrieve) و متد PUT برای به‌روزرسانی (update) استفاده می‌شود
-                    path('', JobSeekerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
-                ])),
+                path('<int:pk>/', JobSeekerProfileViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', JobSeekerProfileViewSet.as_view({'put': 'update'})),
             ])),
         ]
         # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگردانی کل مجموعه
@@ -57,9 +55,8 @@ class EmployerRouter(routers.DefaultRouter):
                 # مسیر خالی جهت فراخوانی متد list (دریافت لیست پروفایل‌های کارفرما)
                 path('', EmployerProfileViewSet.as_view({'get': 'list'})),
                 # مسیر دارای پارامتر pk جهت دریافت جزئیات یا به‌روزرسانی یک پروفایل کارفرما
-                path('<int:pk>/', include([
-                    path('', EmployerProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
-                ])),
+                path('<int:pk>/', EmployerProfileViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', EmployerProfileViewSet.as_view({'put': 'update'})),
             ])),
         ]
         # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگردانی کل مجموعه
@@ -83,10 +80,8 @@ class AdminRouter(routers.DefaultRouter):
                 # مسیر خالی جهت فراخوانی متد list برای دریافت لیست پروفایل‌های مدیر
                 path('', AdminProfileViewSet.as_view({'get': 'list'})),
                 # مسیر دارای پارامتر pk جهت دریافت اطلاعات یک پروفایل مدیر
-                path('<int:pk>/', include([
-                    # استفاده از متد GET برای دریافت جزئیات و PUT برای به‌روزرسانی
-                    path('', AdminProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
-                ])),
+                path('<int:pk>/', AdminProfileViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', AdminProfileViewSet.as_view({'put': 'update'})),
             ])),
         ]
         # برگشت تمام URLهای به صورت ترکیبی
@@ -110,9 +105,8 @@ class SupportRouter(routers.DefaultRouter):
                 # مسیر خالی جهت فراخوانی متد list (دریافت لیست پروفایل‌های پشتیبان)
                 path('', SupportProfileViewSet.as_view({'get': 'list'})),
                 # مسیر دارای پارامتر pk برای دریافت یا به‌روزرسانی یک پروفایل پشتیبان خاص
-                path('<int:pk>/', include([
-                    path('', SupportProfileViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
-                ])),
+                path('<int:pk>/', SupportProfileViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', SupportProfileViewSet.as_view({'put': 'update'})),
             ])),
         ]
         # ترکیب URLهای پیش‌فرض با سفارشی و بازگردانی کل مجموعه URL
