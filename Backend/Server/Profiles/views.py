@@ -52,10 +52,9 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
         دریافت اطلاعات یک پروفایل جوینده کار بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به مشاهده اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            # در صورت دسترسی، پروفایل مورد نظر بازیابی می‌شود
-            profile = get_object_or_404(JobSeekerProfile, user__id=pk)
-            serializer = JobSeekerProfileSerializer(profile)
+        instance = get_object_or_404(EmployerProfile, id=pk)
+        if request.user.is_staff or instance.user == request.user:
+            serializer = JobSeekerProfileSerializer(instance)
             return Response(serializer.data)
         else:
             # ارسال پیام خطای عدم دسترسی
@@ -69,11 +68,10 @@ class JobSeekerProfileViewSet(viewsets.ViewSet):
         به‌روزرسانی اطلاعات یک پروفایل جوینده کار بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به ویرایش اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            # دریافت پروفایل به‌منظور به‌روزرسانی
-            profile = get_object_or_404(JobSeekerProfile, user__id=pk)
+        instance = get_object_or_404(EmployerProfile, id=pk)
+        if request.user.is_staff or instance.user == request.user:
             # سریالایزر با داده‌های ارسالی برای به‌روزرسانی نمونه مربوطه
-            serializer = JobSeekerProfileSerializer(profile, data=request.data)
+            serializer = JobSeekerProfileSerializer(instance, data=request.data)
             if serializer.is_valid():
                 serializer.save()  # ذخیره به‌روزرسانی در دیتابیس
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -122,9 +120,9 @@ class EmployerProfileViewSet(viewsets.ViewSet):
         دریافت اطلاعات یک پروفایل کارفرما بر اساس نام کاربری.
         تنها مدیر یا خود کاربر قادر به مشاهده اطلاعات هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            profile = get_object_or_404(EmployerProfile, user__id=pk)
-            serializer = EmployerProfileSerializer(profile)
+        instance = get_object_or_404(EmployerProfile, id=pk)
+        if request.user.is_staff or instance.user == request.user:
+            serializer = EmployerProfileSerializer(instance)
             return Response(serializer.data)
         else:
             return Response(
@@ -137,9 +135,9 @@ class EmployerProfileViewSet(viewsets.ViewSet):
         به‌روزرسانی اطلاعات یک پروفایل کارفرما بر اساس نام کاربری.
         تنها مدیر یا خود کاربر مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            profile = get_object_or_404(EmployerProfile, user__id=pk)
-            serializer = EmployerProfileSerializer(profile, data=request.data)
+        instance = get_object_or_404(EmployerProfile, id=pk)
+        if request.user.is_staff or instance.user == request.user:
+            serializer = EmployerProfileSerializer(instance, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
@@ -184,7 +182,7 @@ class AdminProfileViewSet(viewsets.ViewSet):
         فقط مدیران ارشد قادر به مشاهده هستند.
         """
         if request.user.is_superuser:
-            profile = get_object_or_404(AdminProfile, user__id=pk)
+            profile = get_object_or_404(AdminProfile, id=pk)
             serializer = AdminProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -198,8 +196,8 @@ class AdminProfileViewSet(viewsets.ViewSet):
         به‌روزرسانی اطلاعات یک پروفایل مدیر بر اساس نام کاربری.
         مدیر سیستم یا خود کاربر مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            profile = get_object_or_404(AdminProfile, user__id=pk)
+        if request.user.is_staff:
+            profile = get_object_or_404(AdminProfile, id=pk)
             serializer = AdminProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -247,7 +245,7 @@ class SupportProfileViewSet(viewsets.ViewSet):
         دریافت اطلاعات یک پروفایل پشتیبان بر اساس نام کاربری.
         """
         if request.user.is_staff:
-            profile = get_object_or_404(SupportProfile, user__id=pk)
+            profile = get_object_or_404(SupportProfile, id=pk)
             serializer = SupportProfileSerializer(profile)
             return Response(serializer.data)
         else:
@@ -261,8 +259,8 @@ class SupportProfileViewSet(viewsets.ViewSet):
         به‌روزرسانی اطلاعات یک پروفایل پشتیبان بر اساس نام کاربری.
         تنها کاربران استاف یا خود صاحب پروفایل مجاز به ویرایش هستند.
         """
-        if request.user.is_staff or request.user.username == pk:
-            profile = get_object_or_404(SupportProfile, user__id=pk)
+        if request.user.is_staff:
+            profile = get_object_or_404(SupportProfile, id=pk)
             serializer = SupportProfileSerializer(profile, data=request.data)
             if serializer.is_valid():
                 serializer.save()

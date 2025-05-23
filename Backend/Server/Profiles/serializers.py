@@ -97,7 +97,7 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerProfile
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at', 'user']
 
     # متد update جهت به‌روز‌رسانی پروفایل کارفرما، مشابه به پیاده‌سازی در پروفایل جوینده کار
     def update(self, instance, validated_data):

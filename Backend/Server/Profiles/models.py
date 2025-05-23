@@ -140,13 +140,6 @@ class EmployerProfile(models.Model):
         verbose_name="کاربر"
     )
 
-    # فیلد company_name: نام شرکت یا سازمان کارفرما
-    company_name = models.CharField(
-        max_length=255,
-        verbose_name="نام شرکت",
-        help_text="نام شرکت یا سازمان"
-    )
-
     # فیلد personal_info: ارتباط یک به یک با مدل اطلاعات شخصی جهت ذخیره اطلاعات تکمیلی مدیرعامل یا مسئول شرکت
     personal_info = models.OneToOneField(
         PersonalInformation,
