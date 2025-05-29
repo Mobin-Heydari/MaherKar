@@ -5,28 +5,18 @@ from .models import Industry, IndustryCategory, Skill  # ایمپورت مدل�
 
 
 
-# ===============================
-# سریالایزر دسته‌بندی صنایع (IndustryCategorySerializer)
-# ===============================
+
 class IndustryCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryCategory  # مدل مرتبط: IndustryCategory
-        fields = [
-            'id',       # شناسه یکتا
-            'name',     # نام دسته‌بندی
-            'slug',     # اسلاگ دسته‌بندی که به صورت URL-friendly تولید می‌شود
-        ]
-        read_only_fields = ['slug']  # فیلد slug فقط خواندنی است؛ تولید آن به صورت خودکار انجام می‌شود
+        fields = '__all__'
 
     def create(self, validated_data):
         """
         ایجاد یک نمونه جدید از دسته‌بندی.
         اسلاگ به صورت خودکار در متد save مدل تولید می‌شود.
         """
-        # دریافت نام از داده‌های معتبر شده
-        name = validated_data.get('name')
-        # ایجاد نمونه‌ی جدید دسته‌بندی فقط با فیلد name؛ سایر فیلد مانند slug در متد save تولید می‌شوند.
-        category = IndustryCategory.objects.create(name=name)
+        category = IndustryCategory.objects.create(**validated_data)
         return category
 
     def update(self, instance, validated_data):
@@ -35,41 +25,41 @@ class IndustryCategorySerializer(serializers.ModelSerializer):
         """
         # به‌روزرسانی فیلد name؛ اگر مقدار جدید ارائه نشده باشد مقدار قبلی حفظ می‌شود.
         instance.name = validated_data.get('name', instance.name)
+
+        instance.icon = validated_data.get('icon', instance.icon)
         # ذخیره تغییرات
         instance.save()
         return instance
 
 
-# ===============================
-# سریالایزر صنایع (IndustrySerializer)
-# ===============================
+
 class IndustrySerializer(serializers.ModelSerializer):
-    # اضافه کردن فیلد category_name جهت نمایش نام دسته‌بندی مرتبط؛ خواندنی
-    category_name = serializers.CharField(source='category.name', read_only=True)
+    # اضافه کردن فیلد category_id جهت نمایش نام دسته‌بندی مرتبط؛ خواندنی
+    category_id = serializers.CharField(write_only=True, required=False)
+    category = IndustryCategorySerializer(read_only=True)
 
     class Meta:
-        model = Industry  # مدل مرتبط: Industry
+        model = Industry
         fields = [
-            'id',          # شناسه یکتا
-            'name',        # نام صنعت
-            'slug',        # اسلاگ صنعت (تولید خودکار در مدل)
-            'category',    # شناسه دسته‌بندی (ForeignKey)
-            'category_name' # نام دسته‌بندی برای نمایش
+            'id',
+            'name',
+            'icon',
+            'category',
+            'category_id'
         ]
-        read_only_fields = ['slug']  # فیلد slug تنها خواندنی است
 
     def create(self, validated_data):
         """
         ایجاد یک نمونه جدید از صنعت و اتصال آن به دسته‌بندی مرتبط.
         برای این کار، اسلاگ دسته‌بندی از context دریافت شده و دسته‌بندی مربوطه واکشی می‌شود.
         """
-        # دریافت category_slug از context؛ در صورتی که وجود نداشته باشد، اعتبارسنجی خطا خواهد داد.
-        category_slug = self.context.get('category_slug')
-        if not category_slug:
-            raise serializers.ValidationError({"category_slug": "Slug of the category is required."})
+        # دریافت category_id از context؛ در صورتی که وجود نداشته باشد، اعتبارسنجی خطا خواهد داد.
+        category_id = validated_data.pop('category_id', None)
+        if not category_id:
+            raise serializers.ValidationError({"category_id": "ID of the category is required."})
         
-        # واکشی دسته‌بندی با استفاده از slug
-        category = get_object_or_404(IndustryCategory, slug=category_slug)
+        # واکشی دسته‌بندی با استفاده از id
+        category = get_object_or_404(IndustryCategory, id=category_id)
 
         # ایجاد صنعت جدید با نام و دسته‌بندی واکشی شده
         industry = Industry.objects.create(
@@ -84,33 +74,36 @@ class IndustrySerializer(serializers.ModelSerializer):
         """
         # به‌روز‌رسانی نام صنعت یا نگهداری مقدار قبلی در صورت عدم ارائه مقدار جدید
         instance.name = validated_data.get('name', instance.name)
+        # به‌روز‌رسانی آیکون صنعت یا نگهداری مقدار قبلی در صورت عدم ارائه مقدار جدید
+        instance.icon = validated_data.get('icon', instance.icon)
         instance.save()
         return instance
 
 
-# ===============================
-# سریالایزر مهارت‌ها (SkillSerializer)
-# ===============================
+
 class SkillSerializer(serializers.ModelSerializer):
     # نمایش جزئیات صنعت به‌عنوان فیلد تو در تو در نمایش مهارت؛ خواندنی است.
     industry = IndustrySerializer(read_only=True)
+    industry_id = serializers.CharField(write_only=True, required=False)
     
     class Meta:
         model = Skill  # مدل مرتبط: Skill
-        fields = ('id', 'name', 'icon', 'industry')
+        fields = ['id', 'name', 'icon', 'industry', 'industry_id']
     
     def create(self, validated_data):
         """
         ایجاد یک نمونه جدید از مهارت و اختصاص آن به یک صنعت.
-        برای این منظور، industry_slug از context دریافت شده و صنعت مربوطه واکشی می‌شود.
+        برای این منظور، industry_id از context دریافت شده و صنعت مربوطه واکشی می‌شود.
         """
-        # دریافت industry_slug از context؛ در صورت عدم وجود خطای اعتبارسنجی می‌دهد.
-        industry_slug = self.context.get('industry_slug')
-        if not industry_slug:
-            raise serializers.ValidationError({"industry_slug": "Slug of the industry is required."})
+        # دریافت industry_id از context؛ در صورت عدم وجود خطای اعتبارسنجی می‌دهد.
+        industry_id = validated_data.pop('industry_id', None)
+        if not industry_id:
+            raise serializers.ValidationError({"industry_id": "ID of the industry is required."})
         
-        # واکشی صنعت با استفاده از اسلاگ
-        industry = get_object_or_404(Industry, slug=industry_slug)
+        try:
+            industry = Industry.objects.get(id=industry_id)
+        except:
+            raise serializers.ValidationError({"industry_id": "The industry with this id not found."})
         
         # ایجاد نمونه مهارت با نام و آیکون (در صورت وجود) و اختصاص به صنعت واکشی شده.
         skill = Skill.objects.create(
@@ -127,12 +120,15 @@ class SkillSerializer(serializers.ModelSerializer):
         به‌روزرسانی نمونه موجود مهارت.
         در صورتی که industry_slug در context موجود باشد، صنعت مربوطه به‌روزرسانی می‌شود.
         """
-        # دریافت industry_slug از context؛ اگر موجود باشد، صنعت به‌روزرسانی می‌شود.
-        industry_slug = self.context.get('industry_slug')
-        if industry_slug:
-            industry = get_object_or_404(Industry, slug=industry_slug)
+        industry_id = validated_data.pop('industry_id', None)
+        if industry_id:
+            try:
+                industry = Industry.objects.get(id=industry_id)
+            except:
+                raise serializers.ValidationError({"industry_id": "The industry with this id not found."})
             instance.industry = industry
-
+            instance.save()
+        
         # به‌روزرسانی فیلد name؛ اگر داده جدید ارائه نشده باشد، مقدار قبلی حفظ می‌شود.
         instance.name = validated_data.get('name', instance.name)
 

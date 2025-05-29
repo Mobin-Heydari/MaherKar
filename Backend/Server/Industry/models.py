@@ -1,27 +1,19 @@
 from django.db import models  # وارد کردن ماژول مدل‌های Django جهت تعریف مدل‌های دیتابیس
-from django.utils.text import slugify  # وارد کردن تابع slugify جهت تبدیل رشته به اسلاگ URL-friendly
+import uuid
 
 
 
-# ------------------------------------------------------
-# مدل دسته‌بندی صنایع (IndustryCategory)
-# ------------------------------------------------------
+
 class IndustryCategory(models.Model):
     """
     مدل برای دسته‌بندی صنایع.
     این مدل شامل نام دسته‌بندی، اسلاگ و آیکون مربوطه است.
     """
+
     name = models.CharField(
         max_length=100,         # حداکثر تعداد کاراکتر: 100
         unique=True,            # یکتایی: نام هر دسته‌بندی باید یکتا باشد
         verbose_name="نام دسته‌بندی"  # نام نمایشی فیلد در پنل ادمین
-    )
-
-    slug = models.SlugField(
-        max_length=100,         # حداکثر تعداد کاراکتر: 100
-        unique=True,            # یکتایی: اسلاگ باید یکتا باشد
-        blank=True,             # اجازه می‌دهد این فیلد خالی بماند (در متد save پر می‌شود)
-        verbose_name="اسلاگ دسته‌بندی"  # عنوان نمایشی فیلد
     )
 
     icon = models.ImageField(
@@ -36,13 +28,6 @@ class IndustryCategory(models.Model):
         verbose_name_plural = "دسته‌بندی‌ها"  # نام جمع مدل
         ordering = ['name']                  # ترتیب نمایش بر اساس نام
 
-    def save(self, *args, **kwargs):
-        """
-        در متد save اگر اسلاگ وجود نداشته باشد، آن را با استفاده از تابع slugify از نام دسته‌بندی تولید می‌کند.
-        """
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)  # فراخوانی متد save والد برای ذخیره‌سازی رکورد
 
     def __str__(self):
         return self.name  # بازگرداندن نام دسته‌بندی به عنوان نمایش (repr) نمونه
@@ -56,17 +41,11 @@ class Industry(models.Model):
     مدل صنایع.
     این مدل شامل نام صنعت، اسلاگ، دسته‌بندی مربوطه، آیکون و... می‌باشد.
     """
+
     name = models.CharField(
         max_length=100,         # حداکثر 100 کاراکتر
         unique=True,            # نام هر صنعت باید یکتا باشد
         verbose_name="نام صنعت" # عنوان نمایشی فیلد
-    )
-
-    slug = models.SlugField(
-        max_length=100,         # حداکثر تعداد کاراکتر: 100
-        unique=True,            # هر اسلاگ باید یکتا باشد
-        blank=True,             # اگر اسلاگ تعیین نشده باشد، در متد save تولید می‌شود
-        verbose_name="اسلاگ صنعت"  # عنوان نمایشی فیلد
     )
     
     category = models.ForeignKey(
@@ -88,13 +67,6 @@ class Industry(models.Model):
         verbose_name_plural = "صنایع"  # نام جمع مدل
         ordering = ['name']           # ترتیب بر اساس نام صنعت
 
-    def save(self, *args, **kwargs):
-        """
-        در متد save اگر اسلاگ صنعت مشخص نشده باشد، به صورت خودکار از نام صنعت تولید می‌شود.
-        """
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)  # فراخوانی متد ذخیره والد
 
     def __str__(self):
         return self.name  # بازگرداندن نام صنعت برای نمایش نمونه
@@ -109,6 +81,7 @@ class Skill(models.Model):
     این مهارت‌ها تنها توسط مدیر سیستم ایجاد و ویرایش می‌شوند؛
     جویندگان کار از مهارت‌های موجود استفاده می‌کنند.
     """
+
     name = models.CharField(
         max_length=100,         # محدودیت 100 کاراکتر
         unique=True,            # نام هر مهارت باید یکتا باشد
