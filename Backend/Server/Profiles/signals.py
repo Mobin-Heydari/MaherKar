@@ -44,7 +44,6 @@ def create_user_profile(sender, instance, created, **kwargs):
             # ایجاد پروفایل کارفرما با استفاده از اطلاعات شخصی و سایر فیلدهای پیش‌فرض
             EmployerProfile.objects.create(
                 user=instance,            # اتصال پروفایل به کاربر ایجاد شده
-                company_name="Undefined", # نام شرکت پیش‌فرض؛ کارفرمایان باید در آینده آن را به‌روز کنند
                 personal_info=personal_info,
                 bio="",                   # بیوگرافی پیش‌فرض خالی
                 profile_picture=None,     # تصویر پروفایل پیش‌فرض تعیین نشده

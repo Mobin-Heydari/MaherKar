@@ -17,8 +17,6 @@ class UserProfileCreationTest(TestCase):
         # ایجاد یک کاربر جوینده کار
         user = User.objects.create_user(
             phone="09123456789",
-            username="jobseeker",
-            email="jobseeker@gmail.com",
             user_type="JS",
             password="password123",
             full_name="test3"
@@ -33,8 +31,6 @@ class UserProfileCreationTest(TestCase):
         # ایجاد یک کاربر کارفرما
         user = User.objects.create_user(
             phone="09111234567",
-            username="employer",
-            email="employer@gmail.com",
             user_type="EM",
             password="password123",
             full_name="test2"
@@ -49,8 +45,6 @@ class UserProfileCreationTest(TestCase):
         # ایجاد یک کاربر ادمین
         user = User.objects.create_superuser(
             phone="09134455678",
-            username="admin",
-            email="admin@gmail.com",
             password="adminpassword123",
             full_name="test"
         )
@@ -64,8 +58,6 @@ class UserProfileCreationTest(TestCase):
         # ایجاد یک کاربر پشتیبان
         user = User.objects.create_user(
             phone="09199887766",
-            username="support",
-            email="support@gmail.com",
             user_type="SU",
             password="password123",
             full_name="test1"
