@@ -9,6 +9,8 @@ from Profiles.models import JobSeekerProfile, EmployerProfile  # وارد کرد
 from Resumes.models import JobSeekerResume       # وارد کردن مدل JobSeekerResume از اپ Resumes
 from Subscriptions.models import AdvertisementSubscription  # وارد کردن مدل AdvertisementSubscription از اپ Subscriptions
 
+import uuid
+
 
 
 
@@ -57,6 +59,8 @@ class Advertisement(models.Model):
         APPROVED = 'Approved', 'تایید شده'         # وضعیت آگهی: تایید شده
         REJECTED = 'Rejected', 'رد شده'            # وضعیت آگهی: رد شده
 
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
+
     # ---------------------------
     # فیلدهای ارتباطی و اطلاعات کلیدی آگهی
     # ---------------------------
@@ -94,12 +98,6 @@ class Advertisement(models.Model):
     title = models.CharField(
         max_length=255,                   # حداکثر 255 کاراکتر برای عنوان آگهی
         verbose_name="عنوان آگهی"         # عنوان فیلد
-    )
-
-    slug = models.SlugField(
-        max_length=255,                   # حداکثر طول 255 برای اسلاگ
-        unique=True,                      # اسلاگ باید یکتا باشد (برای URL به کار می‌رود)
-        verbose_name="اسلاگ"              # عنوان فیلد
     )
 
     advertise_code = models.CharField(
@@ -209,6 +207,12 @@ class JobAdvertisement(models.Model):
         verbose_name="موقعیت شغلی"         # توضیح متنی درباره موقعیت شغلی مربوط به آگهی
     )
 
+    # ---------------------------
+    # فیلدهای زمان‌بندی
+    # ---------------------------
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")  # زمان ایجاد پیوست به صورت خودکار تنظیم می‌شود
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")  # زمان آخرین بروزرسانی پیوست به‌روز می‌شود
+
     class Meta:
         verbose_name = "آگهی کارفرما"           # نام نمایشی مفرد برای مدل
         verbose_name_plural = "آگهی‌های کارفرما"  # نام نمایشی جمع برای مدل
@@ -259,6 +263,13 @@ class ResumeAdvertisement(models.Model):
         verbose_name="نوع کار"            # عنوان فیلد
     )
 
+    # ---------------------------
+    # فیلدهای زمان‌بندی
+    # ---------------------------
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")  # زمان ایجاد پیوست به صورت خودکار تنظیم می‌شود
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")  # زمان آخرین بروزرسانی پیوست به‌روز می‌شود
+
+
     class Meta:
         verbose_name = "آگهی رزومه کارجو"          # نام نمایشی مفرد
         verbose_name_plural = "آگهی‌های رزومه کارجو"  # نام نمایشی جمع
@@ -284,6 +295,8 @@ class Application(models.Model):
         IN_REVIEW = 'IR', 'در حال بررسی'         # وضعیت "در حال بررسی" با کد 'IR'
         ACCEPTED = 'AC', 'پذیرفته شده'            # وضعیت "پذیرفته شده" با کد 'AC'
         REJECTED = 'RE', 'رد شده'                 # وضعیت "رد شده" با کد 'RE'
+
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
     
     # فیلد مربوط به پروفایل جوینده کار (JobSeekerProfile)
     job_seeker = models.ForeignKey(
