@@ -13,14 +13,12 @@ from django.shortcuts import get_object_or_404
 from .models import (
     JobSeekerReport,
     EmployerReport,
-    AdvertisementReport
 )  
 # ایمپورت مدل‌های مرتبط با اپ گزارش‌ها
 
 from .serializers import (
     JobSeekerReportSerializer,
     EmployerReportSerializer,
-    AdvertisementReportSerializer
 )  
 # ایمپورت سریالایزرهای مرتبط با اپ گزارش‌ها
 
@@ -156,69 +154,3 @@ class EmployerReportViewSet(viewsets.ModelViewSet):
             report.delete()
             return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-
-# =============================================================================
-# ویو AdvertisementReportViewSet (مدیریت گزارش‌های آگهی‌ها)
-# =============================================================================
-class AdvertisementReportViewSet(viewsets.ModelViewSet):
-    """
-    ویوست برای مدیریت گزارش‌های آگهی‌ها.
-    """
-    queryset = AdvertisementReport.objects.all()
-    serializer_class = AdvertisementReportSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
-
-    def list(self, request, *args, **kwargs):
-        """
-        لیست تمامی گزارش‌ها؛ فقط قابل دسترسی توسط مدیران (admin).
-        """
-        if request.user.is_staff:
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def retrieve(self, request, id=None, *args, **kwargs):
-        """
-        دریافت جزئیات یک گزارش؛ قابل دسترسی توسط مدیران یا گزارش‌دهنده.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
-
-    def create(self, request, *args, **kwargs):
-        """
-        ایجاد یک گزارش جدید.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(reporter=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def update(self, request, id=None, *args, **kwargs):
-        """
-        بروزرسانی یک گزارش موجود؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)  # واکشی گزارش بر اساس شناسه
-        if request.user.is_staff or request.user == report.reporter:  # بررسی دسترسی مدیر یا گزارش‌دهنده
-            serializer = self.get_serializer(report, data=request.data, partial=True)  # بروزرسانی جزئی (partial=True)
-            if serializer.is_valid():  # بررسی اعتبار داده‌های ورودی
-                serializer.save()  # ذخیره تغییرات
-                return Response(serializer.data, status=status.HTTP_200_OK)  # بازگرداندن داده‌های به‌روز شده
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # ارسال خطای 400 در صورت بروز مشکل
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)  # خطای دسترسی
-
-    def destroy(self, request, id=None, *args, **kwargs):
-        """
-        حذف یک گزارش؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
-        """
-        report = get_object_or_404(self.get_queryset(), id=id)  # واکشی گزارش بر اساس شناسه
-        if request.user.is_staff or request.user == report.reporter:  # بررسی دسترسی مدیر یا گزارش‌دهنده
-            report.delete()  # حذف گزارش از دیتابیس
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)  # ارسال پیام موفقیت در حذف
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)  # خطای دسترسی

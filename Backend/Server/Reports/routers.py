@@ -6,8 +6,7 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (  
     JobSeekerReportViewSet,
-    EmployerReportViewSet,
-    AdvertisementReportViewSet
+    EmployerReportViewSet
 )  
 # ایمپورت ویوست‌های مرتبط با گزارش‌های جویندگان کار، کارفرماها، و آگهی‌ها
 
@@ -58,31 +57,6 @@ class EmployerReportRouter(DefaultRouter):
                 path('', EmployerReportViewSet.as_view({'get': 'list', 'post': 'create'})),
                 # مسیر با شناسه id: دریافت جزئیات (GET)، بروزرسانی (PUT)، و حذف (DELETE) یک گزارش خاص
                 path('<int:id>/', EmployerReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
-            ])),
-        ]
-        # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگرداندن مجموعه نهایی URLها
-        return urls + custom_urls
-
-
-# ---------------------------------------------------------------------------
-# AdvertisementReportRouter: روتر برای مدیریت URLهای مربوط به AdvertisementReport (گزارش آگهی‌ها)
-# ---------------------------------------------------------------------------
-class AdvertisementReportRouter(DefaultRouter):
-    def __init__(self):
-        super().__init__()
-        # ثبت ویوست AdvertisementReportViewSet در روتر با basename 'advertisement-report'
-        self.register(r'', AdvertisementReportViewSet, basename='advertisement-report')
-
-    def get_urls(self):
-        # دریافت URLهای پیش‌فرض از DefaultRouter
-        urls = super().get_urls()
-        # تعریف URLهای سفارشی برای لیست کردن، دریافت جزئیات، ایجاد، بروزرسانی، و حذف گزارش‌ها
-        custom_urls = [
-            path('', include([
-                # مسیر خالی: لیست کردن (GET) و ایجاد (POST) گزارش‌ها
-                path('', AdvertisementReportViewSet.as_view({'get': 'list', 'post': 'create'})),
-                # مسیر با شناسه id: دریافت جزئیات (GET)، بروزرسانی (PUT)، و حذف (DELETE) یک گزارش خاص
-                path('<int:id>/', AdvertisementReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
             ])),
         ]
         # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگرداندن مجموعه نهایی URLها

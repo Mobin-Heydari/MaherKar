@@ -4,7 +4,6 @@ from django.urls import path, include
 from .routers import (
     JobSeekerReportRouter,
     EmployerReportRouter,
-    AdvertisementReportRouter,
 )  
 # ایمپورت روترهای سفارشی مربوط به گزارش‌های جویندگان کار، کارفرماها و آگهی‌ها
 
@@ -17,8 +16,6 @@ app_name = "Reports"
 # ایجاد نمونه‌هایی از روترهای سفارشی
 jobseeker_router = JobSeekerReportRouter()
 employer_router = EmployerReportRouter()
-job_advertisement_router = AdvertisementReportRouter()
-
 
 
 # تعریف الگوهای URL
@@ -30,8 +27,4 @@ urlpatterns = [
     # مسیر 'employer/' برای مدیریت گزارش‌های کارفرماها؛
     # از طریق employer_router.get_urls() تمامی مسیرهای ثبت‌شده در روتر مربوطه درج می‌شود.
     path('employer/', include(employer_router.get_urls())),
-
-    # مسیر 'advertisement/' برای مدیریت گزارش‌های آگهی‌ها؛
-    # از طریق job_advertisement_router.get_urls() تمامی مسیرهای ثبت‌شده در روتر مربوطه درج می‌شود.
-    path('advertisement/', include(job_advertisement_router.get_urls())),
 ]

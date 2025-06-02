@@ -1,40 +1,11 @@
 from rest_framework import routers                 # وارد کردن ماژول روترهای DRF جهت استفاده از DefaultRouter
 from django.urls import path, include               # وارد کردن توابع path و include برای تعریف و درج URLها
 from Advertisements.views import (
-    AdvertisementViewSet,
     JobAdvertisementViewSet,
     ResumeAdvertisementViewSet,
     ApplicationViewSet
 )  # ایمپورت ویوست‌های مربوط به آگهی‌ها از ماژول views اپلیکیشن آگهی‌ها
 
-
-
-# ---------------------------------------------------------------------------
-# AdvertisementRouter: روتر برای مدیریت URLهای مربوط به Advertisement (آگهی عمومی)
-# ---------------------------------------------------------------------------
-class AdvertisementRouter(routers.DefaultRouter):
-    def __init__(self):
-        super().__init__()  
-        # ثبت AdvertisementViewSet با prefix خالی (r'') و تعیین basename 'Advertisements'
-        self.register(r'', AdvertisementViewSet, basename='Advertisements')
-
-    def get_urls(self):
-        # دریافت URLهای پیش‌فرض تعریف شده توسط DefaultRouter
-        urls = super().get_urls()
-        # تعریف URLهای سفارشی جهت پوشش عملیات‌های خاص مانند retrieve و update بر مبنای slug
-        custom_urls = [
-            path('', include([  
-                # مسیر خالی: برای عملیات لیست (GET) آگهی‌ها
-                path('', AdvertisementViewSet.as_view({'get': 'list'})),
-                # مسیر شامل یک پارامتر slug: جهت دریافت و به‌روزرسانی آگهی بر اساس slug
-                path('<slug:slug>/', include([
-                    # در مسیر slug، متد‌های get (retrieve) و put (update) تعریف شده‌اند
-                    path('', AdvertisementViewSet.as_view({'get': 'retrieve', 'put': 'update'})),
-                ])),
-            ])),
-        ]
-        # ترکیب URLهای پیش‌فرض و سفارشی و برگرداندن مجموعه نهایی URLها
-        return urls + custom_urls
 
 # ---------------------------------------------------------------------------
 # JobAdvertisementRouter: روتر برای مدیریت URLهای مربوط به JobAdvertisement (آگهی کارفرما)

@@ -1,8 +1,5 @@
 from django.db import models  # ایمپورت کلاس‌های مدل از Django جهت تعریف مدل‌های دیتابیس
 
-from Advertisements.models import Advertisement  
-# ایمپورت مدل Advertisement از اپ آگهی‌ها جهت استفاده در ارتباط اشتراک‌ها
-
 from Subscriptions.models import AdvertisementSubscription, SubscriptionPlan  
 # ایمپورت مدل‌های AdvertisementSubscription و SubscriptionPlan از اپ اشتراک‌ها
 
@@ -44,12 +41,6 @@ class SubscriptionOrder(models.Model):
         SubscriptionPlan,                      # ارتباط سفارش با مدل SubscriptionPlan جهت تعیین طرح اشتراک مربوطه
         on_delete=models.CASCADE,              # در صورت حذف طرح، رکورد سفارش نیز حذف می‌شود
         verbose_name="پلن"                      # عنوان فیلد در پنل ادمین
-    )
-
-    advertisement = models.ForeignKey(
-        Advertisement,                         # ارتباط سفارش با مدل Advertisement جهت تعیین آگهی مربوطه
-        on_delete=models.CASCADE,              # در صورت حذف آگهی، رکورد سفارش نیز حذف می‌شود
-        verbose_name="آگهی"                     # عنوان فیلد در پنل ادمین
     )
 
     advertisement_subscription = models.ForeignKey(

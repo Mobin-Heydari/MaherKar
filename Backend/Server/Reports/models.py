@@ -4,8 +4,6 @@ from django.db import models
 from Users.models import User  
 # ایمپورت مدل User از اپ کاربران جهت ثبت گزارش‌دهنده‌ها
 
-from Advertisements.models import Advertisement  
-# ایمپورت مدل Advertisement از اپ آگهی‌ها جهت ثبت گزارش‌های مربوط به آگهی‌ها
 
 from Profiles.models import EmployerProfile, JobSeekerProfile  
 # ایمپورت مدل‌های پروفایل کارفرما و جوینده کار جهت ثبت گزارش‌های مربوط به کاربران
@@ -145,58 +143,3 @@ class EmployerReport(models.Model):
     def __str__(self):
         # نمایش نام کارفرما گزارش شده در خروجی نمایشی مدل
         return f"Report against Employer: {self.reported_employer.username}"
-
-
-# =============================================================================
-# مدل AdvertisementReport (گزارش آگهی‌ها)
-# =============================================================================
-class AdvertisementReport(models.Model):
-    """
-    مدل مربوط به گزارش‌های مرتبط با آگهی‌ها.
-    """
-
-    class ReportStatus(models.TextChoices):
-        PENDING = "P", "در انتظار"
-        RESOLVED = "R", "حل شده"
-        REJECTED = "RJ", "رد شده"
-
-    # وضعیت گزارش؛ انتخاب از میان گزینه‌های ReportStatus
-    status = models.CharField(
-        max_length=2,
-        choices=ReportStatus.choices,
-        default=ReportStatus.PENDING,
-        verbose_name="وضعیت گزارش"
-    )
-
-    # آگهی گزارش شده؛ ارتباط با مدل Advertisement
-    advertisement = models.ForeignKey(
-        Advertisement,
-        on_delete=models.CASCADE,  # در صورت حذف آگهی، گزارش نیز حذف می‌شود
-        related_name="reports_against_joqb_advertisement",
-        verbose_name="آگهی گزارش شده"
-    )
-
-    # کاربری که گزارش را ثبت کرده است؛ ارتباط با مدل User
-    reporter = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,  # در صورت حذف گزارش‌دهنده، گزارش نیز حذف می‌شود
-        related_name="advertisement_reports",
-        verbose_name="گزارش‌دهنده"
-    )
-
-    # دسته‌بندی گزارش؛ ارتباط با مدل ReportCategory
-    category = models.ForeignKey(
-        ReportCategory,
-        on_delete=models.CASCADE,  # در صورت حذف دسته‌بندی، گزارش نیز حذف می‌شود
-        verbose_name="دسته‌بندی گزارش"
-    )
-
-    # توضیحات گزارش؛ امکان خالی بودن فراهم است
-    description = models.TextField(blank=True, verbose_name="توضیحات گزارش")
-
-    # زمان ایجاد گزارش؛ به صورت خودکار ثبت می‌شود
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
-
-    def __str__(self):
-        # نمایش شناسه آگهی گزارش شده در خروجی نمایشی مدل
-        return f"Report for Advertisement ID: {self.advertisement.id}"

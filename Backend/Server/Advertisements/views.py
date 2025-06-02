@@ -10,58 +10,14 @@ from rest_framework.generics import get_object_or_404
 from Profiles.models import JobSeekerProfile  
 # ایمپورت مدل JobSeekerProfile از اپ Profiles جهت استفاده در ویوها
 
-from .models import Advertisement, JobAdvertisement, ResumeAdvertisement, Application  
+from .models import JobAdvertisement, ResumeAdvertisement, Application  
 # ایمپورت مدل‌های مربوط به آگهی‌ها: Advertisement (آگهی عمومی)، JobAdvertisement (آگهی کارفرما)، 
 # ResumeAdvertisement (آگهی رزومه کارجو) و Application (درخواست)
 
-from .serializers import AdvertisementSerializer, JobAdvertisementSerializer, ResumeAdvertisementSerializer, ApplicationSerializer  
+from .serializers import JobAdvertisementSerializer, ResumeAdvertisementSerializer, ApplicationSerializer  
 # ایمپورت سریالایزرهای مربوط به مدل‌های فوق جهت تبدیل داده‌ها به فرمت JSON و بالعکس
 
 
-
-
-# ======================================================================
-# AdvertisementViewSet: ویوست برای مدیریت آگهی‌های عمومی
-# ======================================================================
-class AdvertisementViewSet(viewsets.ViewSet):
-
-    def list(self, request):
-        # دریافت تمامی آگهی‌های عمومی از مدل Advertisement
-        queryset = Advertisement.objects.all()
-        # سریالایز کردن queryset به صورت لیست (many=True)
-        serializer = AdvertisementSerializer(queryset, many=True)
-        # بازگرداندن داده‌های سریالایز شده به همراه کد HTTP 200 (موفقیت‌آمیز)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def retrieve(self, request, slug):
-        # واکشی یک آگهی عمومی بر مبنای فیلد slug؛ در صورت عدم وجود خطای 404 داده می‌شود
-        query = get_object_or_404(Advertisement, slug=slug)
-        # سریالایز کردن آگهی دریافت شده
-        serializer = AdvertisementSerializer(query)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def update(self, request, slug):
-        # واکشی آگهی عمومی بر اساس slug
-        query = get_object_or_404(Advertisement, slug=slug)
-        # ایجاد سریالایزر جهت به‌روزرسانی شماره داده‌های ورودی به‌صورت partial (جزئی)
-        serializer = AdvertisementSerializer(query, data=request.data, partial=True, context={'request': request})
-        # بررسی مجوز: اگر کاربر درخواست‌دهنده همان مالک آگهی یا admin باشد
-        if request.user == query.owner or request.user.is_staff:
-            if serializer.is_valid():
-                serializer.save()  # ذخیره تغییرات در آگهی
-                return Response(
-                    {
-                        'Message': "Advertisemenet updated.",  # پیام موفقیت
-                        "Data": serializer.data
-                    }, 
-                    status=status.HTTP_200_OK
-                )
-            else:
-                # ارسال خطاهای اعتبارسنجی در صورت بروز مشکل
-                return Response({"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            # در صورت عدم مجوز، ارسال پاسخ خطای 403 (ممنوع)
-            return Response({"Massage": "You dont have permission"}, status=status.HTTP_403_FORBIDDEN)
         
 
 # ======================================================================
@@ -117,12 +73,9 @@ class JobAdvertisementViewSet(viewsets.ViewSet):
             return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
     
     def destroy(self, request, pk, slug):
-        # واکشی آگهی عمومی مرتبط بر اساس slug
-        main_ad = get_object_or_404(Advertisement, slug=slug)
         # واکشی آگهی کارفرما مرتبط که شناسه آن pk و فیلد advertisement برابر با main_ad باشد
-        query = get_object_or_404(JobAdvertisement, id=pk, advertisement=main_ad)
+        query = get_object_or_404(JobAdvertisement, id=pk)
         if query.advertisement.owner == request.user or request.user.is_staff:
-            main_ad.delete()  # حذف آگهی عمومی از دیتابیس
             query.delete()    # حذف آگهی کارفرما
             return Response({"Massage": "The advertisement deleted."}, status=status.HTTP_204_NO_CONTENT)
         else:
@@ -181,13 +134,10 @@ class ResumeAdvertisementViewSet(viewsets.ViewSet):
         else:
             return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
     
-    def destroy(self, request, pk, slug):
-        # واکشی آگهی عمومی بر اساس slug
-        main_ad = get_object_or_404(Advertisement, slug=slug)
+    def destroy(self, request, pk):
         # واکشی آگهی رزومه کارجو مرتبط بر اساس شناسه (pk) و آگهی مربوطه (main_ad)
-        query = get_object_or_404(ResumeAdvertisement, id=pk, advertisement=main_ad)
+        query = get_object_or_404(ResumeAdvertisement, id=pk)
         if query.advertisement.owner == request.user or request.user.is_staff:
-            main_ad.delete()  # حذف آگهی عمومی از دیتابیس
             query.delete()    # حذف آگهی رزومه کارجو
             return Response({"Massage": "The advertisement deleted."}, status=status.HTTP_204_NO_CONTENT)
         else:

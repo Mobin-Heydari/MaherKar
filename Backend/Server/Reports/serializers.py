@@ -5,7 +5,6 @@ from .models import (
     ReportCategory,
     JobSeekerReport,
     EmployerReport,
-    AdvertisementReport,
 )  
 # ایمپورت مدل‌های مرتبط با اپ گزارش‌ها برای استفاده در سریالایزرها
 
@@ -100,47 +99,6 @@ class EmployerReportSerializer(serializers.ModelSerializer):
         متد ایجاد یک گزارش جدید برای کارفرماها.
         """
         return EmployerReport.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        """
-        متد به‌روزرسانی یک گزارش موجود.
-        """
-        # به‌روزرسانی وضعیت گزارش (اگر مقدار جدید وارد شده باشد)
-        instance.status = validated_data.get('status', instance.status)
-        # به‌روزرسانی توضیحات گزارش
-        instance.description = validated_data.get('description', instance.description)
-        instance.save()  # ذخیره تغییرات در دیتابیس
-        return instance  # بازگرداندن نمونه به‌روزرسانی‌شده
-
-
-# =============================================================================
-# سریالایزر AdvertisementReportSerializer (گزارش‌های آگهی‌ها)
-# =============================================================================
-class AdvertisementReportSerializer(serializers.ModelSerializer):
-    """
-    سریالایزر برای مدل AdvertisementReport جهت مدیریت گزارش‌های مربوط به آگهی‌ها.
-    """
-    # نمایش نام کاربری گزارش‌دهنده (فقط خواندنی)
-    reporter_username = serializers.ReadOnlyField(source='reporter.username')
-
-    class Meta:
-        model = AdvertisementReport  # اتصال سریالایزر به مدل AdvertisementReport
-        fields = [
-            'id',  # شناسه گزارش
-            'status',  # وضعیت گزارش
-            'job_advertisement',  # آگهی گزارش شده
-            'reporter',  # گزارش‌دهنده
-            'reporter_username',  # نام کاربری گزارش‌دهنده
-            'category',  # دسته‌بندی گزارش
-            'description',  # توضیحات گزارش
-            'created_at',  # زمان ایجاد گزارش
-        ]
-
-    def create(self, validated_data):
-        """
-        متد ایجاد یک گزارش جدید برای آگهی‌ها.
-        """
-        return AdvertisementReport.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """

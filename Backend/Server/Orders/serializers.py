@@ -1,8 +1,6 @@
 from rest_framework import serializers  
 # ایمپورت ماژول serializers از DRF جهت مدیریت داده‌های ورودی و خروجی سریالایزرها
 
-from Advertisements.models import Advertisement  
-# ایمپورت مدل Advertisement از اپ آگهی‌ها جهت ارتباط با آگهی در سفارش اشتراک
 
 from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription  
 # ایمپورت مدل‌های SubscriptionPlan و AdvertisementSubscription از اپ اشتراک‌ها
@@ -41,8 +39,7 @@ class SubscriptionOrderSerializer(serializers.ModelSerializer):
         
         # واکشی طرح اشتراک بر اساس شناسه plan_id
         plan = SubscriptionPlan.objects.get(id=plan_id)
-        # واکشی آگهی بر اساس slug
-        advertisement = Advertisement.objects.get(slug=ad_slug)
+
         # واکشی اشتراک آگهی بر اساس شناسه subscription_id
         subscription = AdvertisementSubscription.objects.get(id=subscription_id)
 
@@ -67,7 +64,6 @@ class SubscriptionOrderSerializer(serializers.ModelSerializer):
         order = SubscriptionOrder.objects.create(
             plan=plan,
             owner=request.user,
-            advertisement=advertisement,
             advertisement_subscription=subscription,
             total_price=total_price,
             duration=duration,

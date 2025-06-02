@@ -13,8 +13,6 @@ from .models import SubscriptionOrder
 from .serializers import SubscriptionOrderSerializer  
 # ایمپورت سریالایزر SubscriptionOrderSerializer برای مدیریت داده‌های ورودی و خروجی
 
-from Advertisements.models import Advertisement  
-# ایمپورت مدل Advertisement برای مدیریت آگهی‌های مرتبط با سفارش
 
 from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription  
 # ایمپورت مدل‌های SubscriptionPlan و AdvertisementSubscription برای مدیریت طرح‌ها و اشتراک‌های مرتبط
@@ -71,14 +69,6 @@ class SubscriptionOrderViewSet(viewsets.ViewSet):
 
         # واکشی اشتراک آگهی بر اساس شناسه subscription_id
         subscription = get_object_or_404(AdvertisementSubscription, id=subscription_id)
-
-        # واکشی آگهی بر اساس slug و بررسی مالکیت و ارتباط آن با اشتراک
-        advertisement = get_object_or_404(
-            Advertisement,
-            slug=ad_slug,
-            owner=request.user,  # کاربر جاری باید مالک آگهی باشد
-            subscription=subscription
-        )
 
         # ایجاد سریالایزر با داده‌های ورودی و ارسال مقادیر context شامل اطلاعات طرح، آگهی و اشتراک
         serializer = SubscriptionOrderSerializer(
