@@ -160,7 +160,8 @@ class JobAdvertisement(models.Model):
         verbose_name_plural = "آگهی‌های کارفرما"
 
     def __str__(self):
-        return f"{self.advertisement.title} ({self.company.name})"
+        return f"{self.title} ({self.company.name})"
+
 
 
 class ResumeAdvertisement(models.Model):
@@ -173,7 +174,7 @@ class ResumeAdvertisement(models.Model):
     job_seeker = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="Profile",
+        related_name="resume_advertisements",
         verbose_name="پروفایل کارجو"
     )
 
@@ -271,7 +272,8 @@ class ResumeAdvertisement(models.Model):
         verbose_name_plural = "آگهی‌های رزومه کارجو"
 
     def __str__(self):
-        return f"{self.advertisement.title} ({self.job_seeker_profile})"
+        return f"{self.title} ({self.job_seeker.username})"
+
 
 
 
@@ -318,7 +320,7 @@ class Application(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
-        return f"{self.job_seeker.user.username} -> {self.advertisement.title}"
+        return f"{self.job_seeker.username} -> {self.advertisement.title}"
     
     def mark_as_viewed(self):
         """
