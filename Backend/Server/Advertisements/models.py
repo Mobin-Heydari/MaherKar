@@ -120,32 +120,36 @@ class JobAdvertisement(models.Model):
     gender = models.CharField(
         max_length=2,
         choices=GenderChoices.choices,
-        verbose_name="جنسیت"
+        verbose_name="جنسیت",
+        blank=True, null=True
     )
 
     soldier_status = models.CharField(
         max_length=2,
         choices=SoldierStatusChoices.choices,
-        verbose_name="وضعیت سربازی"
+        verbose_name="وضعیت سربازی",
+        blank=True, null=True
     )
 
     degree = models.CharField(
         max_length=2,
         choices=DegreeChoices.choices,
-        verbose_name="حداقل مدرک تحصیلی"
+        verbose_name="حداقل مدرک تحصیلی",
+        blank=True, null=True
     )
 
     salary = models.CharField(
         max_length=30,
         choices=SalaryChoices.choices,
-        default=SalaryChoices.NEGOTIABLE,
-        verbose_name="محدوده حقوق"
+        verbose_name="محدوده حقوق",
+        blank=True, null=True
     )
 
     job_type = models.CharField(
         max_length=2,
         choices=JobTypeChoices.choices,
-        verbose_name="نوع کار"
+        verbose_name="نوع کار",
+        blank=True, null=True
     )
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
@@ -225,32 +229,37 @@ class ResumeAdvertisement(models.Model):
     gender = models.CharField(
         max_length=2,
         choices=GenderChoices.choices,
-        verbose_name="جنسیت"
+        verbose_name="جنسیت",
+        blank=True, null=True
     )
 
     soldier_status = models.CharField(
         max_length=2,
         choices=SoldierStatusChoices.choices,
-        verbose_name="وضعیت سربازی"
+        verbose_name="وضعیت سربازی",
+        blank=True, null=True
     )
 
     degree = models.CharField(
         max_length=2,
         choices=DegreeChoices.choices,
-        verbose_name="حداقل مدرک تحصیلی"
+        verbose_name="حداقل مدرک تحصیلی",
+        blank=True, null=True
     )
 
     salary = models.CharField(
         max_length=30,
         choices=SalaryChoices.choices,
         default=SalaryChoices.NEGOTIABLE,
-        verbose_name="محدوده حقوق"
+        verbose_name="محدوده حقوق",
+        blank=True, null=True
     )
 
     job_type = models.CharField(
         max_length=2,
         choices=JobTypeChoices.choices,
-        verbose_name="نوع کار"
+        verbose_name="نوع کار",
+        blank=True, null=True
     )
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
