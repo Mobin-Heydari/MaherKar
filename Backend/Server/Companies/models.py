@@ -5,12 +5,18 @@ from django.utils.text import slugify  # وارد کردن تابع slugify جه
 from Locations.models import City       # ایمپورت مدل City از اپ Locations جهت ذخیره اطلاعات شهر
 from Industry.models import Industry      # ایمپورت مدل Industry از اپ Industry جهت ذخیره اطلاعات صنعت
 
+import uuid
+
+
 
   
 class Company(models.Model):
     # -------------------------------
     # فیلد مربوط به مدیرعامل شرکت
     # -------------------------------
+
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
+
     employer = models.ForeignKey(
         'Users.User',  # ارجاع به مدل User از اپ Users
         on_delete=models.CASCADE,  # در صورت حذف مدیرعامل، شرکت نیز حذف می‌شود
@@ -24,12 +30,6 @@ class Company(models.Model):
         max_length=255, 
         unique=True,  # نام شرکت باید یکتا باشد
         verbose_name="نام شرکت"  # نام شرکت جهت نمایش در پنل
-    )
-    slug = models.SlugField(
-        max_length=255, 
-        unique=True,  # اسلاگ نیز باید یکتا باشد
-        blank=True,   # امکان خالی ماندن اسلاگ وجود دارد؛ در متد save پر می‌شود
-        verbose_name="اسلاگ"  # نام نمایشی فیلد اسلاگ
     )
     description = models.TextField(
         blank=True,  # توضیحات اختیاری است

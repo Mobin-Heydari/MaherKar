@@ -15,7 +15,6 @@ class CompanySerializer(serializers.ModelSerializer):
             'id',                 # شناسه یکتا
             'employer',           # مدیرعامل (کاربر مرتبط)
             'name',               # نام شرکت
-            'slug',               # اسلاگ شرکت، به صورت URL-friendly
             'description',        # توضیحات شرکت
             'website',            # آدرس وبسایت شرکت
             'email',              # ایمیل رسمی شرکت
@@ -36,7 +35,7 @@ class CompanySerializer(serializers.ModelSerializer):
             'updated_at'          # تاریخ آخرین به‌روزرسانی رکورد (خودکار)
         ]
         # تعیین فیلدهای read-only: این فیلدها توسط کاربر تغییر نمی‌کنند
-        read_only_fields = ['employer', 'slug', 'created_at', 'updated_at']
+        read_only_fields = ['employer', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         """

@@ -27,8 +27,8 @@ class CompanyRouter(DefaultRouter):
                 path('', CompanyViewSet.as_view({'get': 'list'})),
                 # مسیر خالی برای فراخوانی متد create ویوست (ایجاد شرکت جدید) از طریق متد POST
                 path('', CompanyViewSet.as_view({'post': 'create'})),
-                # مسیر شامل یک پارامتر رشته‌ای (slug) برای عملیات دریافت و به‌روزرسانی یک شرکت خاص
-                path('<str:slug>/', include([
+                # مسیر شامل یک پارامتر رشته‌ای (pk) برای عملیات دریافت و به‌روزرسانی یک شرکت خاص
+                path('<uuid:pk>/', include([
                     # فراخوانی متد retrieve جهت دریافت اطلاعات یک شرکت (به وسیله GET)
                     path('', CompanyViewSet.as_view({'get': 'retrieve'})),
                     # فراخوانی متد update جهت به‌روزرسانی اطلاعات شرکت (به وسیله PUT)
@@ -37,4 +37,4 @@ class CompanyRouter(DefaultRouter):
             ])),
         ]
         # ترکیب URLهای پیش‌فرض و سفارشی و بازگرداندن کل مجموعه URLها
-        return urls + custom_urls
+        return custom_urls

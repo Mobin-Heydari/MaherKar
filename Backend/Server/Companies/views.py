@@ -18,8 +18,8 @@ class CompanyViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrOwnerForUpdateAndEmployerForCreate]
     # فقط کاربران احراز هویت شده و کسانی که مجوزهای اضافی (مدیر یا صاحب شرکت) دارند، قادر به انجام تغییرات هستند
 
-    # استفاده از slug به عنوان شناسه جهت عملیات retrieve/update/delete
-    lookup_field = 'slug'
+    # استفاده از pk به عنوان شناسه جهت عملیات retrieve/update/delete
+    lookup_field = 'pk'
 
     def list(self, request, *args, **kwargs):
         """List all companies.
@@ -29,11 +29,11 @@ class CompanyViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)  # سریالایز کردن داده‌ها در قالب لیست
         return Response(serializer.data, status=status.HTTP_200_OK)  # ارسال پاسخ موفقیت‌آمیز با کد 200
 
-    def retrieve(self, request, slug, *args, **kwargs):
-        """Retrieve a specific company by its slug.
-           دریافت اطلاعات یک شرکت بر اساس اسلاگ (slug).
+    def retrieve(self, request, pk, *args, **kwargs):
+        """Retrieve a specific company by its pk.
+           دریافت اطلاعات یک شرکت بر اساس اسلاگ (pk).
         """
-        instance = get_object_or_404(Company, slug=slug)  # دریافت شرکت با استفاده از فیلد slug؛ اگر یافت نشود، خطای 404 صادر می‌شود
+        instance = get_object_or_404(Company, id=pk)  # دریافت شرکت با استفاده از فیلد pk اگر یافت نشود، خطای 404 صادر می‌شود
         serializer = self.get_serializer(instance)         # سریالایز کردن نمونه شرکت
         return Response(serializer.data, status=status.HTTP_200_OK)  # ارسال داده‌های سریالایز شده با وضعیت 200
 
@@ -50,12 +50,12 @@ class CompanyViewSet(ModelViewSet):
         # در صورت عدم اعتبارسنجی، خطاهای دریافت شده را با کد 400 برمی‌گرداند
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, slug, *args, **kwargs):
+    def update(self, request, pk, *args, **kwargs):
         """Update an existing company.
            به‌روزرسانی اطلاعات یک شرکت موجود بر اساس اسلاگ.
         """
-        # تلاش برای دریافت شرکت بر اساس slug، در صورت عدم وجود خطای 404 برمی‌گرداند
-        instance = get_object_or_404(Company, slug=slug)
+        # تلاش برای دریافت شرکت بر اساس pk در صورت عدم وجود خطای 404 برمی‌گرداند
+        instance = get_object_or_404(Company, id=pk)
         # استفاده از متد update سریالایزر؛ از partial=True استفاده شده تا امکان به‌روزرسانی جزئی (فیلدهای انتخابی) فراهم شود
         serializer = self.get_serializer(instance=instance, data=request.data, partial=True)
         if serializer.is_valid():  # صحت‌سنجی داده‌ها
