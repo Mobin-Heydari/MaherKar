@@ -64,49 +64,54 @@ class JobSeekerResume(models.Model):
         NOT_AVAILABLE = 'not_available', 'غیرقابل دسترسی'
 
     # ارتباط یک به یک با پروفایل جوینده کار از اپ Profiles؛ هر رزومه متعلق به یک پروفایل جوینده کار است
-    job_seeker_profile = models.OneToOneField(
-        'Profiles.JobSeekerProfile',
+    job_seeker = models.OneToOneField(
+        'Users.User',
         on_delete=models.CASCADE,
-        related_name="Resume",
+        related_name="resume",
         verbose_name="جوینده کار"
     )
 
     # ارتباط به مدل Industry جهت تعیین صنعتی که رزومه مربوط به آن است
     industry = models.ForeignKey(
         Industry,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name="صنعت",
-        related_name="Resume_Industry"
+        related_name="resume_industry",
+        null=True
     )
 
     # عنوان شغلی رزومه
     headline = models.CharField(
         max_length=255,
-        verbose_name="عنوان شغلی"
+        verbose_name="عنوان شغلی",
+        null=True
     )
 
     # بیوگرافی یا توضیح مختصر درباره کاربر
     bio = models.TextField(
         blank=True,
-        verbose_name="بیوگرافی"
+        verbose_name="بیوگرافی",
+        null=True
     )
 
     # آدرس وب‌سایت شخصی یا حرفه‌ای
     website = models.URLField(
         blank=True,
-        verbose_name="وب‌سایت"
+        verbose_name="وب‌سایت",
+        null=True
     )
 
     # آدرس پروفایل لینکدین
     linkedin_profile = models.URLField(
         blank=True,
-        verbose_name="لینکدین"
+        verbose_name="لینکدین",
+        null=True
     )
 
     # ارتباط به مدل City جهت تعیین شهری که رزومه مربوط به آن است
     location = models.ForeignKey(
         City,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="شهر"
@@ -117,6 +122,7 @@ class JobSeekerResume(models.Model):
         max_length=20,
         choices=GenderChoices.choices,
         verbose_name="جنسیت",
+        null=True
     )
 
     # تعیین وضعیت سربازی رزومه
@@ -124,6 +130,7 @@ class JobSeekerResume(models.Model):
         max_length=30,
         choices=SoldierStatusChoices.choices,
         verbose_name="وضعیت سربازی",
+        null=True
     )
 
     # تعیین مدرک تحصیلی رزومه
@@ -131,6 +138,7 @@ class JobSeekerResume(models.Model):
         max_length=20,
         choices=DegreeChoices.choices,
         verbose_name="مدرک تحصیلی",
+        null=True
     )
 
     # تعداد سال سابقه مرتبط (به صورت عددی)
@@ -145,6 +153,7 @@ class JobSeekerResume(models.Model):
         max_length=50,
         choices=CooperationTypeChoices.choices,
         verbose_name="سابقه کاری",
+        null=True
     )
 
     # حقوق مورد انتظار با استفاده از گزینه‌های تعریف شده؛ مقدار پیش‌فرض 'توافقی'
@@ -152,20 +161,23 @@ class JobSeekerResume(models.Model):
         max_length=20,
         choices=SalaryChoices.choices,
         verbose_name="حقوق مورد نظر",
-        default=SalaryChoices.NEGOTIABLE
+        default=SalaryChoices.NEGOTIABLE,
+        null=True
     )
 
     # نوع شغل مورد علاقه کاربر (مثلاً تمام وقت یا پاره وقت)
     preferred_job_type = models.CharField(
         max_length=20,
         choices=JobTypeChoices.choices,
-        verbose_name="نوع شغل مورد علاقه"
+        verbose_name="نوع شغل مورد علاقه",
+        null=True
     )
 
     # فیلد بارگذاری فایل رزومه (CV)؛ فایل‌ها در مسیر مشخص ذخیره می‌شوند
     cv = models.FileField(
         upload_to='jobseekers/resumes/',
-        verbose_name="رزومه"
+        verbose_name="رزومه",
+        null=True
     )
 
     # وضعیت دسترسی رزومه (مثلاً فوری یا با اطلاع)
@@ -173,7 +185,8 @@ class JobSeekerResume(models.Model):
         max_length=20,
         choices=AvailabilityChoices.choices,
         verbose_name="وضعیت دسترسی",
-        default=AvailabilityChoices.IMMEDIATELY
+        default=AvailabilityChoices.IMMEDIATELY,
+        null=True
     )
 
     # تاریخ و زمان ایجاد رزومه؛ به صورت خودکار ثبت می‌شود
@@ -231,9 +244,10 @@ class Experience(models.Model):
     # ارتباط به مدل City جهت تعیین محل شرکت؛ استفاده از related_name جهت دسترسی راحت‌تر به مکان شرکت‌ها
     location = models.ForeignKey(
         City,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="company_locations",
-        verbose_name="مکان"
+        verbose_name="مکان",
+        null=True
     )
 
     # تاریخ شروع تجربه کاری
@@ -359,9 +373,10 @@ class JobSeekerSkill(models.Model):
     # ارتباط به مدل Skill جهت انتخاب مهارت از لیست مهارت‌های تعریف شده
     skill = models.ForeignKey(
         Skill,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name="مهارت",
-        related_name="Job_Seeker"
+        related_name="Job_Seeker",
+        null=True,
     )
 
     # تعیین سطح مهارت با استفاده از گزینه‌های تعریف شده

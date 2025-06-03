@@ -75,10 +75,10 @@ class AdvertisementSubscription(models.Model):
     duration = models.IntegerField(default=1, verbose_name="مدت زمان (روز)")
 
     # فیلد start_date؛ تاریخ شروع اشتراک را تنظیم می‌کند.
-    start_date = models.DateTimeField(default=timezone.now, verbose_name="تاریخ شروع")
+    start_date = models.DateTimeField(default=timezone.now, verbose_name="تاریخ شروع", null=True, blank=True)
 
     # فیلد end_date؛ تاریخ پایان اشتراک را ذخیره می‌کند.
-    end_date = models.DateTimeField(verbose_name="تاریخ پایان")
+    end_date = models.DateTimeField(verbose_name="تاریخ پایان", null=True, blank=True)
 
     # فیلد created_at؛ تاریخ ایجاد رکورد اشتراک به‌صورت خودکار تنظیم می‌شود.
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")

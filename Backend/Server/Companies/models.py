@@ -153,16 +153,3 @@ class Company(models.Model):
     # -------------------------------
     def __str__(self):
         return self.name  # بازگرداندن نام شرکت به عنوان نمایش نمونه
-
-    # -------------------------------
-    # متد ذخیره‌سازی سفارشی
-    # -------------------------------
-    def save(self, *args, **kwargs):
-        """
-        قبل از ذخیره‌سازی، اگر فیلد slug خالی باشد، آن را از نام شرکت تولید می‌کند.
-        """
-        if not self.slug:
-            # استفاده از تابع slugify برای تولید نسخه‌ای URL-friendly از نام شرکت
-            self.slug = slugify(self.name)
-        # فراخوانی متد save کلاس والد جهت ذخیره اطلاعات در دیتابیس
-        super(Company, self).save(*args, **kwargs)
