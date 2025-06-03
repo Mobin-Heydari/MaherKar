@@ -1,74 +1,82 @@
-from rest_framework import serializers  
-# ایمپورت ماژول serializers از DRF جهت مدیریت داده‌های ورودی و خروجی سریالایزرها
+from rest_framework import serializers
 
+from Advertisements.models import Advertisement, JobAdvertisement, ResumeAdvertisement
 
-from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription  
-# ایمپورت مدل‌های SubscriptionPlan و AdvertisementSubscription از اپ اشتراک‌ها
+from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription
 
-from .models import SubscriptionOrder  
-# ایمپورت مدل SubscriptionOrder از فایل models اپ سفارشات
+from .models import SubscriptionOrder
 
-import uuid  
-# ایمپورت uuid جهت تولید شناسه‌های یکتا برای سفارشات
+import uuid 
 
 
 
-# =============================================================================
-# سریالایزر SubscriptionOrderSerializer
-# =============================================================================
+
 class SubscriptionOrderSerializer(serializers.ModelSerializer):
-    """
-    سریالایزر برای مدل SubscriptionOrder جهت مدیریت داده‌های مربوط به سفارشات اشتراک.
-    """
 
     class Meta:
-        model = SubscriptionOrder  # اتصال سریالایزر به مدل SubscriptionOrder
-        fields = "__all__"  # تمامی فیلدهای مدل در خروجی سریالایزر نمایش داده می‌شوند
+        model = SubscriptionOrder
+        fields = "__all__"
+
 
     def create(self, validated_data):
-        """
-        متد create جهت ایجاد یک سفارش جدید بر اساس داده‌های ورودی.
-        """
-        # دریافت شیء request از context برای دسترسی به کاربر درخواست‌دهنده
         request = self.context.get('request')
 
-        # استخراج شناسه طرح اشتراک (plan_id)، slug آگهی (ad_slug)، و شناسه اشتراک (subscription_id) از context
-        plan_id = self.context.get('plan_id')
-        ad_slug = self.context.get('ad_slug')
-        subscription_id = self.context.get('subscription_id')
+        user = request.user
+
+        plan_id = validated_data.pop('plan_id', None)
+        if plan_id:
+            try:
+                plan = SubscriptionPlan.objects.get(id=plan_id)
+            except SubscriptionPlan.DoesNotExist:
+                raise serializers.ValidationError({'plan': 'The plan does not exist.'})
+        else:
+            raise serializers.ValidationError({'plan_id': 'This field is required.'})
         
-        # واکشی طرح اشتراک بر اساس شناسه plan_id
-        plan = SubscriptionPlan.objects.get(id=plan_id)
+        advertisement_id = validated_data.pop('advertisement_id', None)
+        if advertisement_id:
+            try:
+                advertisement = Advertisement.objects.get(id=advertisement_id)
+            except Advertisement.DoesNotExist:
+                raise serializers.ValidationError({'advertisement': 'The advertisement does not exist.'})
+        else:
+            raise serializers.ValidationError({'advertisement_id': 'This field is required.'})
+        
+        
+        if advertisement.ad_type == 'J':
+            if advertisement.job_advertisement.employer == user or user.is_staff:
+                ad_type = "J"
+            else:
+                raise serializers.ValidationError({'error': 'Uncommon security error for job advertisement.'})
+            
+        if advertisement.ad_type == 'R':
+            if advertisement.resume_advertisement.job_seeker == user or user.is_staff:
+                ad_type = "R"
+            else:
+                raise serializers.ValidationError({'error': 'Uncommon security error for resume advertisement.'})
+        
 
-        # واکشی اشتراک آگهی بر اساس شناسه subscription_id
-        subscription = AdvertisementSubscription.objects.get(id=subscription_id)
+        subscription = advertisement.subscription
+        
+        price_per_day = plan.price_per_day
 
-        # محاسبه قیمت روزانه اشتراک بر اساس طرح
-        price = plan.price_per_day
-
-        # دریافت مدت زمان اشتراک از داده‌های معتبر ورودی
-        duration = validated_data.get('durations')
-
-        # محاسبه قیمت کلی بر اساس مدت زمان و قیمت روزانه
-        duration_price = duration * price
-        # محاسبه مالیات (10٪ از قیمت کلی)
+        duration = validated_data.get('duration')
+        duration_price = duration * price_per_day
         taks_price = duration_price * 10 // 100
 
-        # محاسبه قیمت نهایی
         total_price = duration_price + taks_price
 
-        # تولید یک شناسه یکتا برای سفارش
         order_id = uuid.uuid4()
 
-        # ایجاد یک نمونه جدید از SubscriptionOrder با اطلاعات محاسبه‌شده
         order = SubscriptionOrder.objects.create(
             plan=plan,
-            owner=request.user,
-            advertisement_subscription=subscription,
-            total_price=total_price,
+            owner=user,
             duration=duration,
             order_id=order_id,
+            total_price=total_price,
+            advertisement=advertisement,
+            advertisement_subscription=subscription,
+            ad_type=ad_type
         )
 
-        order.save()  # ذخیره نمونه ایجاد شده در دیتابیس
-        return order  # بازگرداندن سفارش ایجاد شده
+        order.save()
+        return order

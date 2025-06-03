@@ -18,18 +18,14 @@ class SubscriptionOrderRouter(DefaultRouter):
         self.register(r'', SubscriptionOrderViewSet, basename='SubscriptionOrder')
 
     def get_urls(self):
-        # دریافت URLهای پیش‌فرض از DefaultRouter
-        urls = super().get_urls()
         # تعریف URLهای سفارشی جهت مدیریت عملیات‌های لیست کردن، دریافت جزئیات، و ایجاد سفارش
         custom_urls = [
             path('', include([
                 # مسیر خالی برای دریافت لیست سفارشات (GET)
-                path('', SubscriptionOrderViewSet.as_view({'get': 'list'})),
+                path('', SubscriptionOrderViewSet.as_view({'get': 'list', 'post': 'create'})),
                 # مسیر شامل شناسه سفارش (order_id) برای دریافت جزئیات سفارش (GET)
-                path('<str:order_id>/', SubscriptionOrderViewSet.as_view({'get': 'retreive'})),
-                # مسیر شامل شناسه طرح، شناسه اشتراک، و slug آگهی برای ایجاد سفارش جدید (POST)
-                path('<int:plan_id>/<int:subscription_id>/<slug:ad_slug>/', SubscriptionOrderViewSet.as_view({'post': 'create'})),
+                path('<uuid:order_id>/', SubscriptionOrderViewSet.as_view({'get': 'retreive'})),
             ])),
         ]
         # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگرداندن مجموعه نهایی URLها
-        return urls + custom_urls
+        return custom_urls

@@ -13,6 +13,8 @@ from .models import SubscriptionOrder
 from .serializers import SubscriptionOrderSerializer  
 # ایمپورت سریالایزر SubscriptionOrderSerializer برای مدیریت داده‌های ورودی و خروجی
 
+from Advertisements.models import Advertisement  
+# ایمپورت مدل Advertisement برای مدیریت آگهی‌های مرتبط با سفارش
 
 from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription  
 # ایمپورت مدل‌های SubscriptionPlan و AdvertisementSubscription برای مدیریت طرح‌ها و اشتراک‌های مرتبط
@@ -50,37 +52,23 @@ class SubscriptionOrderViewSet(viewsets.ViewSet):
         """
         دریافت جزئیات یک سفارش خاص بر اساس order_id.
         """
-        query = get_object_or_404(SubscriptionOrder, order_id=order_id)  
+        instance = get_object_or_404(SubscriptionOrder, id=order_id)  
         # واکشی سفارش از دیتابیس بر اساس order_id یا ارسال خطای 404 اگر یافت نشود
-        if request.user == query.owner or request.user.is_staff:  
+        if request.user == instance.owner or request.user.is_staff:  
             # بررسی اینکه آیا کاربر مالک سفارش یا admin است
-            serializer = SubscriptionOrderSerializer(query)  
+            serializer = SubscriptionOrderSerializer(instance)  
             return Response(serializer.data, status=status.HTTP_200_OK)  
         else:
             # در صورت نداشتن مجوز دسترسی، ارسال پاسخ خطای دسترسی
             return Response({"Massage": "شما برای دسترسی به این اطلاعات مجوز ندارید."})
 
-    def create(self, request, plan_id, subscription_id, ad_slug):
+    def create(self, request):
         """
         ایجاد یک سفارش جدید.
         """
-        # واکشی طرح اشتراک بر اساس شناسه plan_id
-        plan = get_object_or_404(SubscriptionPlan, id=plan_id)
-
-        # واکشی اشتراک آگهی بر اساس شناسه subscription_id
-        subscription = get_object_or_404(AdvertisementSubscription, id=subscription_id)
 
         # ایجاد سریالایزر با داده‌های ورودی و ارسال مقادیر context شامل اطلاعات طرح، آگهی و اشتراک
-        serializer = SubscriptionOrderSerializer(
-            data=request.data,
-            context={
-                'request': request,
-                'plan_id': plan_id,
-                'subscription_id': subscription_id,
-                'ad_slug': ad_slug
-            }
-        )
-
+        serializer = SubscriptionOrderSerializer(data=request.data)
         if serializer.is_valid():
             # اگر داده‌ها معتبر باشند، یک سفارش جدید ایجاد و ذخیره می‌شود
             serializer.save()
