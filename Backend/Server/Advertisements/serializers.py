@@ -32,7 +32,7 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
         fields = '__all__'
         # These fields are automatically set by the create() method,
         # so they cannot be modified via the serializer.
-        read_only_fields = ['employer', 'location', 'company', 'advertisement']
+        read_only_fields = ['employer', 'location', 'company', 'advertisement', 'industry']
 
     def create(self, validated_data):
         # Retrieve the current request and logged-in user.
@@ -143,7 +143,7 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
         model = ResumeAdvertisement
         fields = '__all__'
         # job_seeker, location, and resume are controlled by the system.
-        read_only_fields = ['job_seeker', 'location', 'resume', 'advertisement']
+        read_only_fields = ['job_seeker', 'location', 'resume', 'advertisement', 'industry']
 
     def create(self, validated_data):
         # Get the request context to access the user.
@@ -251,7 +251,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = '__all__'
         # These fields are automatically set during creation, not updated via input.
-        read_only_fields = ['job_seeker', 'advertisement', 'resume']
+        read_only_fields = ['job_seeker', 'advertisement', 'resume', 'industry', 'location']
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -296,8 +296,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
             instance.employer_notes = validated_data.get('employer_notes', instance.employer_notes)
             instance.viewed_by_employer = validated_data.get('viewed_by_employer', instance.viewed_by_employer)
             instance.cover_letter = validated_data.get('cover_letter', instance.cover_letter)
+
+
         # The job seeker can update only the cover letter.
-        elif user == instance.job_seeker:
+        if user == instance.job_seeker or user.is_staff:
             instance.cover_letter = validated_data.get('cover_letter', instance.cover_letter)
 
         instance.save()
