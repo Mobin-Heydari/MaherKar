@@ -1,0 +1,13 @@
+{
+  "app": "maher-kar",
+  "port": 80,
+  "build": {
+    "location": "iran"
+  },
+  "disks": [
+    {
+      "name": "main",
+      "mountTo": "path/to/folder"
+    }
+  ]
+}
