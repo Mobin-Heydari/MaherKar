@@ -7,9 +7,6 @@ from Advertisements.views import (
 )  # ایمپورت ویوست‌های مربوط به آگهی‌ها از ماژول views اپلیکیشن آگهی‌ها
 
 
-# ---------------------------------------------------------------------------
-# JobAdvertisementRouter: روتر برای مدیریت URLهای مربوط به JobAdvertisement (آگهی کارفرما)
-# ---------------------------------------------------------------------------
 class JobAdvertisementRouter(routers.DefaultRouter):
     def __init__(self):
         super().__init__()
@@ -17,20 +14,19 @@ class JobAdvertisementRouter(routers.DefaultRouter):
         self.register(r'', JobAdvertisementViewSet, basename='JobAdvertisements')
 
     def get_urls(self):
-        urls = super().get_urls()
         custom_urls = [
             path('', include([
                 # مسیر خالی: تعریف متد get (لیست) برای آگهی‌های کارفرما
                 path('', JobAdvertisementViewSet.as_view({'get': 'list'})),
-                # مسیر شامل پارامتر slug: برای دریافت (GET) یک آگهی کارفرما و ایجاد (POST) آگهی
-                path('<slug:slug>/', JobAdvertisementViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
-                # مسیر شامل یک پارامتر pk از نوع int: برای به‌روزرسانی (PUT) یک آگهی کارفرما
-                path('<int:pk>/', JobAdvertisementViewSet.as_view({'put': 'update'})),
-                # مسیر شامل دو پارامتر pk (int) و slug: جهت حذف (DELETE) آگهی کارفرما
-                path('<int:pk>/<slug:slug>/', JobAdvertisementViewSet.as_view({'delete': 'destroy'})),
+                # مسیر شامل پارامتر uuid: برای دریافت (GET) یک آگهی کارفرما و ایجاد (POST) آگهی
+                path('<uuid:pk>/', JobAdvertisementViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
+                # مسیر شامل یک پارامتر pk از نوع uuid: برای به‌روزرسانی (PUT) یک آگهی کارفرما
+                path('<uuid:pk>/', JobAdvertisementViewSet.as_view({'put': 'update'})),
+                # مسیر شامل دو پارامتر pk (uuid) و uuid: جهت حذف (DELETE) آگهی کارفرما
+                path('<uuid:pk>/', JobAdvertisementViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
-        return urls + custom_urls
+        return custom_urls
 
 # ---------------------------------------------------------------------------
 # ResumeAdvertisementRouter: روتر برای مدیریت URLهای مربوط به ResumeAdvertisement (آگهی رزومه کارجو)
@@ -42,24 +38,21 @@ class ResumeAdvertisementRouter(routers.DefaultRouter):
         self.register(r'', ResumeAdvertisementViewSet, basename='ResumeAdvertisements')
 
     def get_urls(self):
-        urls = super().get_urls()
         custom_urls = [
             path('', include([
                 # مسیر خالی: متدهای get (لیست کردن) و post (ایجاد) برای آگهی‌های رزومه کارجو
                 path('', ResumeAdvertisementViewSet.as_view({'get': 'list', 'post': 'create'})),
-                # مسیر شامل یک پارامتر slug جهت دریافت (GET) آگهی رزومه کارجو بر اساس slug آگهی
-                path('<slug:slug>/', ResumeAdvertisementViewSet.as_view({'get': 'retrieve'})),
+                # مسیر شامل یک پارامتر pk جهت دریافت (GET) آگهی رزومه کارجو بر اساس pk آگهی
+                path('<uuid:pk>/', ResumeAdvertisementViewSet.as_view({'get': 'retrieve'})),
                 # مسیر شامل یک پارامتر pk جهت به‌روزرسانی (PUT) آگهی رزومه کارجو
-                path('<int:pk>/', ResumeAdvertisementViewSet.as_view({'put': 'update'})),
-                # مسیر شامل دو پارامتر pk (int) و slug جهت حذف (DELETE) آگهی رزومه کارجو
-                path('<int:pk>/<slug:slug>/', ResumeAdvertisementViewSet.as_view({'delete': 'destroy'})),
+                path('<uuid:pk>/', ResumeAdvertisementViewSet.as_view({'put': 'update'})),
+                # مسیر شامل دو پارامتر pk (uuid) و pk جهت حذف (DELETE) آگهی رزومه کارجو
+                path('<uuid:pk>/', ResumeAdvertisementViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
-        return urls + custom_urls
+        return custom_urls
 
-# ---------------------------------------------------------------------------
-# ApplicationRouter: روتر برای مدیریت URLهای مربوط به Application (درخواست‌های ارسال شده)
-# ---------------------------------------------------------------------------
+
 class ApplicationRouter(routers.DefaultRouter):
     def __init__(self):
         super().__init__()
@@ -67,15 +60,14 @@ class ApplicationRouter(routers.DefaultRouter):
         self.register(r'', ApplicationViewSet, basename='applications')
 
     def get_urls(self):
-        urls = super().get_urls()
         custom_urls = [
             path('', include([
                 # مسیر خالی: متد get (لیست کردن) و post (ایجاد) برای درخواست‌ها
                 path('', ApplicationViewSet.as_view({'get': 'list', 'post': 'create'})),
-                # مسیر شامل یک پارامتر pk از نوع int جهت مدیریت عملیات retrieve، update و delete
-                path('<int:pk>/', include([
+                # مسیر شامل یک پارامتر pk از نوع uuid جهت مدیریت عملیات retrieve، update و delete
+                path('<uuid:pk>/', include([
                     path('', ApplicationViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
                 ])),
             ])),
         ]
-        return urls + custom_urls
+        return custom_urls

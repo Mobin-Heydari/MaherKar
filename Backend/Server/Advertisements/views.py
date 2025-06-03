@@ -1,28 +1,16 @@
-from rest_framework import viewsets, permissions, status  
-# وارد کردن کلاس‌های viewsets برای ساخت ویو کلاس‌بیس، permissions برای مدیریت دسترسی و status برای کدهای وضعیت HTTP
+from rest_framework import viewsets, permissions, status
 
-from rest_framework.response import Response  
-# استفاده برای ارسال پاسخ‌های HTTP به‌صورت دقیق
+from rest_framework.response import Response
 
-from rest_framework.generics import get_object_or_404  
-# استفاده از تابع get_object_or_404 جهت بازیابی شیء از دیتابیس یا پرتاب خطای 404 در صورت عدم وجود
+from rest_framework.generics import get_object_or_404 
 
-from Profiles.models import JobSeekerProfile  
-# ایمپورت مدل JobSeekerProfile از اپ Profiles جهت استفاده در ویوها
+from Profiles.models import JobSeekerProfile
 
-from .models import JobAdvertisement, ResumeAdvertisement, Application  
-# ایمپورت مدل‌های مربوط به آگهی‌ها: Advertisement (آگهی عمومی)، JobAdvertisement (آگهی کارفرما)، 
-# ResumeAdvertisement (آگهی رزومه کارجو) و Application (درخواست)
+from .models import JobAdvertisement, ResumeAdvertisement, Application
 
-from .serializers import JobAdvertisementSerializer, ResumeAdvertisementSerializer, ApplicationSerializer  
-# ایمپورت سریالایزرهای مربوط به مدل‌های فوق جهت تبدیل داده‌ها به فرمت JSON و بالعکس
+from .serializers import Advertisement, JobAdvertisementSerializer, ResumeAdvertisementSerializer, ApplicationSerializer
 
 
-        
-
-# ======================================================================
-# JobAdvertisementViewSet: ویوست برای مدیریت آگهی‌های کارفرما
-# ======================================================================
 class JobAdvertisementViewSet(viewsets.ViewSet):
     
     def list(self, request):
@@ -32,17 +20,15 @@ class JobAdvertisementViewSet(viewsets.ViewSet):
         serializer = JobAdvertisementSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def retrieve(self, request, slug):
-        # واکشی آگهی کارفرما بر مبنای آگهی عمومی (Advertisement) که اسلاگ آن برابر slug است.
-        query = get_object_or_404(JobAdvertisement, advertisement__slug=slug)
+    def retrieve(self, request, pk):
+        query = get_object_or_404(JobAdvertisement, id=pk)
         serializer = JobAdvertisementSerializer(query)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def create(self, request, slug):
+    def create(self, request):
         # بررسی می‌شود که کاربر دارای نوع کاربری (user_type) "EM" (کارفرما) است.
         if request.user.user_type == "EM":
-            # ایجاد سریالایزر با داده‌های ورودی؛ در context، company_slug برابر با slug و request ارسال می‌شود
-            serializer = JobAdvertisementSerializer(data=request.data, context={'company_slug': slug, 'request': request})
+            serializer = JobAdvertisementSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()  # ایجاد یک آگهی کارفرما جدید
                 return Response({"Massage": "Job created."}, status=status.HTTP_201_CREATED)
@@ -72,7 +58,7 @@ class JobAdvertisementViewSet(viewsets.ViewSet):
         else:
             return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
     
-    def destroy(self, request, pk, slug):
+    def destroy(self, request, pk):
         # واکشی آگهی کارفرما مرتبط که شناسه آن pk و فیلد advertisement برابر با main_ad باشد
         query = get_object_or_404(JobAdvertisement, id=pk)
         if query.advertisement.owner == request.user or request.user.is_staff:
@@ -82,9 +68,7 @@ class JobAdvertisementViewSet(viewsets.ViewSet):
             return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
         
 
-# ======================================================================
-# ResumeAdvertisementViewSet: ویوست جهت مدیریت آگهی‌های رزومه کارجو
-# ======================================================================
+
 class ResumeAdvertisementViewSet(viewsets.ViewSet):
     
     def list(self, request):
@@ -93,19 +77,17 @@ class ResumeAdvertisementViewSet(viewsets.ViewSet):
         serializer = ResumeAdvertisementSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def retrieve(self, request, slug):
-        # واکشی آگهی رزومه کارجو بر اساس اسلاگ آگهی عمومی (advertisement__slug)
-        query = get_object_or_404(ResumeAdvertisement, advertisement__slug=slug)
+    def retrieve(self, request, pk):
+        # واکشی آگهی رزومه کارجو بر اساس اسلاگ آگهی عمومی (id)
+        query = get_object_or_404(ResumeAdvertisement, id=pk)
         serializer = ResumeAdvertisementSerializer(query)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def create(self, request):
         # بررسی می‌شود که کاربر دارای نوع کاربری "JS" (جوینده کار) است.
         if request.user.user_type == "JS":
-            # واکشی پروفایل جوینده کار بر اساس کاربر درخواست‌دهنده
-            profile = get_object_or_404(JobSeekerProfile, user=request.user)
             # ایجاد سریالایزر جهت ایجاد آگهی رزومه؛ context شامل شناسه پروفایل و request ارسال می‌شود
-            serializer = ResumeAdvertisementSerializer(data=request.data, context={'jobseeker_profile_id': profile.id, 'request': request})
+            serializer = ResumeAdvertisementSerializer(data=request.data, context={'request': request})
             if serializer.is_valid():
                 serializer.save()  # ایجاد ResumeAdvertisement جدید
                 return Response({"Massage": "Resume created."}, status=status.HTTP_201_CREATED)
@@ -144,9 +126,7 @@ class ResumeAdvertisementViewSet(viewsets.ViewSet):
             return Response({"Massage": "You dont have the permissions."}, status=status.HTTP_403_FORBIDDEN)
 
 
-# ======================================================================
-# ApplicationViewSet: ویوست مدیریت درخواست‌های ارسال شده (Application)
-# ======================================================================
+
 class ApplicationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Application model operations.
