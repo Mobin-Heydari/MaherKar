@@ -12,6 +12,8 @@ import uuid
 
 
 
+
+
 class SalaryChoices(models.TextChoices):
     RANGE_5_TO_10 = '5 to 10', '5 تا 10 میلیون تومان'        # انتخاب محدوده حقوق از 5 تا 10 میلیون تومان
     RANGE_10_TO_15 = '10 to 15', '10 تا 15 میلیون تومان'      # انتخاب محدوده حقوق از 10 تا 15 میلیون تومان
@@ -54,6 +56,31 @@ class JobTypeChoices(models.TextChoices):
 
 
 
+class Advertisement(models.Model):
+    class TypeChoices(models.TextChoices):
+        JOB = 'J', 'شغل'
+        RESUME = 'R', 'رزومه'
+
+
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
+
+    subscription = models.OneToOneField(
+        AdvertisementSubscription,
+        on_delete=models.CASCADE,
+        related_name="advertisement",
+        verbose_name="اشتراک"
+    )
+
+    ad_type = models.CharField(
+        max_length=1,
+        verbose_name="نوع آگهی",
+        choices=TypeChoices.choices,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ بروزرسانی")
+
+
 class JobAdvertisement(models.Model):
     """
     مدل برای آگهی‌های کارفرما. این مدل اطلاعات بیشتری مانند شرکت و کارفرما را در بر می‌گیرد.
@@ -61,6 +88,13 @@ class JobAdvertisement(models.Model):
 
 
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True)
+
+    advertisement = models.OneToOneField(
+        Advertisement,
+        on_delete=models.CASCADE,
+        verbose_name="آگهی",
+        related_name="job_advertisement"
+    )
 
     company = models.ForeignKey(
         Company,
@@ -83,13 +117,6 @@ class JobAdvertisement(models.Model):
         verbose_name="صنعت"
     )
 
-
-    subscription = models.OneToOneField(
-        AdvertisementSubscription,
-        on_delete=models.CASCADE,
-        related_name="job_advertisement",
-        verbose_name="اشتراک"
-    )
 
     location = models.ForeignKey(
         City,
@@ -193,11 +220,11 @@ class ResumeAdvertisement(models.Model):
     )
 
 
-    subscription = models.OneToOneField(
-        AdvertisementSubscription,
+    advertisement = models.OneToOneField(
+        Advertisement,
         on_delete=models.CASCADE,
-        related_name="resume_advertisements_subscription",
-        verbose_name="اشتراک"
+        verbose_name="آگهی",
+        related_name="resume_advertisement"
     )
 
     location = models.ForeignKey(
@@ -290,13 +317,13 @@ class Application(models.Model):
     job_seeker = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="Applications"
+        related_name="applications"
     )
 
     advertisement = models.ForeignKey(
         JobAdvertisement,
         on_delete=models.CASCADE,
-        related_name="Applications"
+        related_name="applications"
     )
     
     cover_letter = models.TextField(blank=True)
