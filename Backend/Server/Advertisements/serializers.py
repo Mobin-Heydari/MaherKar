@@ -7,7 +7,17 @@ from Locations.models import City
 from Companies.models import Company
 from Subscriptions.models import AdvertisementSubscription
 from Resumes.models import JobSeekerResume
-from .models import JobAdvertisement, ResumeAdvertisement, Application
+from .models import Advertisement, JobAdvertisement, ResumeAdvertisement, Application
+
+
+
+
+class AdvertisementSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Advertisement
+        fields = '__all__'
+        read_only_fields = ['subscription']
 
 
 
@@ -22,7 +32,7 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
         fields = '__all__'
         # These fields are automatically set by the create() method,
         # so they cannot be modified via the serializer.
-        read_only_fields = ['employer', 'location', 'company']
+        read_only_fields = ['employer', 'location', 'company', 'advertisement']
 
     def create(self, validated_data):
         # Retrieve the current request and logged-in user.
@@ -56,15 +66,22 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'You are not the employer of this company.'})
         
         # Generate a unique identifier for the advertisement.
-        generated_id = uuid.uuid4()
+        ad_generated_id = uuid.uuid4()
+        job_generated_id = uuid.uuid4()
         
         # Create a new subscription for this advertisement.
         subscription = AdvertisementSubscription.objects.create()
+
+        advertisement = Advertisement.objects.create(
+            subscription=subscription,
+            id=ad_generated_id,
+            ad_type="J",
+        )
         
         # Create the JobAdvertisement with all relationships and remaining data.
         advertisement = JobAdvertisement.objects.create(
-            id=generated_id,
-            subscription=subscription,
+            id=job_generated_id,
+            advertisement=advertisement,
             industry=industry,
             company=company,
             location=company.location,  # Location is inferred from the company.
@@ -117,6 +134,7 @@ class JobAdvertisementSerializer(serializers.ModelSerializer):
 
 
 class ResumeAdvertisementSerializer(serializers.ModelSerializer):
+
     # Accepting input for a related city and industry.
     city_id = serializers.CharField(write_only=True, required=False)
     industry_id = serializers.CharField(write_only=True, required=False)
@@ -125,7 +143,7 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
         model = ResumeAdvertisement
         fields = '__all__'
         # job_seeker, location, and resume are controlled by the system.
-        read_only_fields = ['job_seeker', 'location', 'resume']
+        read_only_fields = ['job_seeker', 'location', 'resume', 'advertisement']
 
     def create(self, validated_data):
         # Get the request context to access the user.
@@ -153,7 +171,8 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'city_id': 'This field is required.'})
         
         # Generate a new unique identifier.
-        generated_id = uuid.uuid4()
+        resume_generated_id = uuid.uuid4()
+        ad_generated_id = uuid.uuid4()
 
         # Retrieve the JobSeekerResume for the logged in user.
         try:
@@ -164,17 +183,23 @@ class ResumeAdvertisementSerializer(serializers.ModelSerializer):
         # Create a subscription for this resume advertisement.
         subscription = AdvertisementSubscription.objects.create()
 
-        # Create the ResumeAdvertisement instance using the remaining validated data.
-        advertisement = ResumeAdvertisement.objects.create(
-            id=generated_id,
+        advertisement = Advertisement.objects.create(
             subscription=subscription,
+            id=ad_generated_id,
+            ad_type="R",
+        )
+
+        # Create the ResumeAdvertisement instance using the remaining validated data.
+        resume_advertisement = ResumeAdvertisement.objects.create(
+            advertisement=advertisement,
+            id=resume_generated_id,
             industry=industry,
             location=location,
             job_seeker=user,
             resume=resume,
             **validated_data
         )
-        return advertisement
+        return resume_advertisement
 
     def update(self, instance, validated_data):
         # Get request and user from the serializer context.
