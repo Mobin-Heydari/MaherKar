@@ -88,7 +88,7 @@ DATABASES = {
         'NAME': 'heuristic_black',                      
         'USER': 'root',
         'PASSWORD': 'LZTzvbVRttDwHePARSseH7iy',
-        'HOST' : 'maher-kar-db.liara.run',
+        'HOST' : 'maher-kar-db',
         'PORT' : '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
