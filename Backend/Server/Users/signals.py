@@ -8,6 +8,7 @@ from Profiles.models import (                           # ایمپورت مدل�
     SupportProfile,
     PersonalInformation
 )
+from Resumes.models import JobSeekerResume
 
 
 # اتصال سیگنال post_save به مدل User جهت ایجاد خودکار پروفایل‌های مربوطه پس از ایجاد یک کاربر جدید
@@ -35,6 +36,7 @@ def create_user_profile(sender, instance, created, **kwargs):
                 location=None,            # پیش‌فرض شهر (در صورت تمایل می‌توانید به یک شهر پیش‌فرض اشاره کنید)
                 industry=None,            # پیش‌فرض صنعت نامشخص
             )
+            JobSeekerResume.objects.create(job_seeker=instance)
         elif instance.user_type == "EM":  # در صورتی که نوع کاربر "کارفرما" باشد
             # ایجاد اطلاعات شخصی با مقادیر پیش‌فرض؛ مقدار سن برای کارفرمایان معمولاً بالاتر است.
             personal_info = PersonalInformation.objects.create(

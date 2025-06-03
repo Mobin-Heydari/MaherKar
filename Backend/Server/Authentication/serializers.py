@@ -4,7 +4,7 @@ from rest_framework import validators               # وارد کردن ولید
 
 from rest_framework_simplejwt.tokens import RefreshToken  # برای تولید توکن‌های JWT جهت احراز هویت
 
-from Users.models import User, IdCardInFormation  # ایمپورت مدل‌های کاربر و اطلاعات کارت شناسایی از اپ Users
+from Users.models import User  # ایمپورت مدل‌های کاربر و اطلاعات کارت شناسایی از اپ Users
 from .models import OneTimePassword, UserRegisterOTP, UserLoginOTP  # ایمپورت مدل‌های OTP و ثبت‌نام کاربر با OTP
 
 from random import randint  # برای تولید اعداد تصادفی (به عنوان کدهای OTP)
@@ -214,8 +214,6 @@ class UserRegisterValidateOneTimePasswordSerializer(serializers.Serializer):
 
         user_register_otp = otp.registration_otps  # دریافت رکورد ثبت‌نام مرتبط با OTP
 
-        id_card_info = IdCardInFormation.objects.create()
-
         password = get_random_string(length=16)
 
         user = User.objects.create_user(
@@ -224,8 +222,6 @@ class UserRegisterValidateOneTimePasswordSerializer(serializers.Serializer):
             full_name=user_register_otp.full_name,
             user_type=user_register_otp.user_type
         )
-
-        user.id_card_info = id_card_info
 
         user.save()
 
