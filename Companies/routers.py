@@ -1,6 +1,6 @@
-from rest_framework.routers import DefaultRouter  # وارد کردن کلاس DefaultRouter از Django REST Framework جهت ایجاد روتر سفارشی
-from django.urls import path, include             # وارد کردن توابع path و include برای تعریف و درج URLها
-from .views import CompanyViewSet                   # ایمپورت ویوست مربوط به شرکت (CompanyViewSet)
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
+from .views import CompanyViewSet
 
 
 
@@ -15,8 +15,7 @@ class CompanyRouter(DefaultRouter):
             path('', include([
                 path('', CompanyViewSet.as_view({'get': 'list', 'post': 'create'})),
                 path('<uuid:pk>/', include([
-                    path('', CompanyViewSet.as_view({'get': 'retrieve'})),
-                    path('', CompanyViewSet.as_view({'put': 'update'})),
+                    path('', CompanyViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
                 ])),
             ])),
         ]
