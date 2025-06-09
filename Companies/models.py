@@ -153,4 +153,3 @@ class Company(models.Model):
     # -------------------------------
     def __str__(self):
         return self.name  # بازگرداندن نام شرکت به عنوان نمایش نمونه
-

@@ -1,156 +1,232 @@
-from rest_framework import viewsets, status  
-# ایمپورت ماژول viewsets برای مدیریت ویوست‌ها و status برای کدهای وضعیت HTTP
-
-from rest_framework.response import Response  
-# ایمپورت کلاس Response برای ارسال پاسخ‌های HTTP
-
-from rest_framework.permissions import IsAuthenticated  
-# ایمپورت کلاس IsAuthenticated برای محدود کردن دسترسی به کاربران احراز هویت‌شده
-
-from django.shortcuts import get_object_or_404  
-# ایمپورت تابع get_object_or_404 برای واکشی شیء از دیتابیس یا بازگرداندن خطای 404 در صورت عدم وجود
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 
 from .models import (
-    JobSeekerReport,
+    ReportCategory,
     EmployerReport,
-)  
-# ایمپورت مدل‌های مرتبط با اپ گزارش‌ها
-
+    JobSeekerReport,
+    AdvertisementReport
+)
 from .serializers import (
-    JobSeekerReportSerializer,
+    ReportCategorySerializer,
     EmployerReportSerializer,
-)  
-# ایمپورت سریالایزرهای مرتبط با اپ گزارش‌ها
+    JobSeekerReportSerializer,
+    AdvertisementReportSerializer
+)
+
+from .permissions import IsAdminOrSupporterOrReporter, IsAdminOrReadOnly
+
+from Users.models import User
+from Advertisements.models import Advertisement
 
 
 
-# =============================================================================
-# ویو JobSeekerReportViewSet (مدیریت گزارش‌های جویندگان کار)
-# =============================================================================
-class JobSeekerReportViewSet(viewsets.ModelViewSet):
+class ReportCategoryViewSet(viewsets.ViewSet):
+    permission_classes = [IsAdminOrReadOnly]
+
+    def list(self, request):
+        queryset = ReportCategory.objects.all()
+        serializer = ReportCategorySerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def retrieve(self, request, pk):
+        instance = get_object_or_404(ReportCategory, id=pk)
+        serializer = ReportCategorySerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        serializer = ReportCategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'The category is created.'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk):
+        instance = get_object_or_404(ReportCategory, id=pk)
+        serializer = ReportCategorySerializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'The category updated.'}, status=status.HTTP_205_RESET_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, pk):
+        insatnce = get_object_or_404(ReportCategory, id=pk)
+        insatnce.delete()
+        return Response({'message': 'The category is deleted.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+class JobSeekerReportViewSet(viewsets.ViewSet):
     """
     ویوست برای مدیریت گزارش‌های جویندگان کار.
     """
-    queryset = JobSeekerReport.objects.all()  # تعیین مجموعه داده‌ها (queryset) برای واکشی گزارش‌ها از دیتابیس
-    serializer_class = JobSeekerReportSerializer  # اتصال سریالایزر JobSeekerReport به ویوست
-    permission_classes = [IsAuthenticated]  # محدود کردن دسترسی به کاربران احراز هویت‌شده
-    lookup_field = 'id'  # استفاده از فیلد 'id' برای جستجو و بازیابی گزارش‌ها
+    permission_classes = [IsAuthenticated, IsAdminOrSupporterOrReporter]
+    lookup_field = 'pk'
 
     def list(self, request, *args, **kwargs):
         """
         لیست تمامی گزارش‌ها؛ فقط قابل دسترسی توسط مدیران (admin).
         """
-        if request.user.is_staff:  # بررسی اینکه آیا کاربر admin است
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)  # سریالایز کردن داده‌ها به صورت لیست
-            return Response(serializer.data)  # ارسال داده‌ها در پاسخ HTTP
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        queryset = JobSeekerReport.objects.all()
+        serializer = JobSeekerReportSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-    def retrieve(self, request, id=None, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
         دریافت جزئیات یک گزارش؛ قابل دسترسی توسط مدیران، گزارش‌دهنده، یا جوینده کار گزارش‌شده.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)  # واکشی گزارش بر اساس شناسه
-        if request.user.is_staff or request.user == report.reporter or request.user == report.reported_jobseeker.user:
-            serializer = self.get_serializer(report)  # سریالایز کردن داده‌های گزارش
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        instance = get_object_or_404(JobSeekerReport, id=pk)
+        serializer = JobSeekerReportSerializer(instance)
+        return Response(serializer.data)
+    
 
-    def create(self, request, *args, **kwargs):
-        """
-        ایجاد یک گزارش جدید.
-        """
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():  # بررسی معتبر بودن داده‌ها
-            serializer.save(reporter=request.user)  # ثبت کاربر درخواست‌دهنده به عنوان گزارش‌دهنده
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def create(self, request, pk, *args, **kwargs):
+        if pk is None:
+            return Response({"message":"The user id is needed."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(User, id=pk)
+
+        if user.user_type != "JS":
+            return Response({'error': 'This user is not a jobseeker'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        
+        serializer = JobSeekerReportSerializer(data=request.data, context={'request': request, 'user_id': user.id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'massage': 'The report created.'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self, request, id=None, *args, **kwargs):
+    def update(self, request, pk, *args, **kwargs):
         """
         بروزرسانی یک گزارش موجود؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report, data=request.data, partial=True)  # بروزرسانی جزئی
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        instance = get_object_or_404(JobSeekerReport, id=pk)
+        self.check_object_permissions(request, instance)
+        serializer = JobSeekerReportSerializer(instance, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def destroy(self, request, id=None, *args, **kwargs):
+    def destroy(self, request, pk, *args, **kwargs):
         """
         حذف یک گزارش؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            report.delete()
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        instance = get_object_or_404(JobSeekerReport, id=pk)
+        self.check_object_permissions(request, instance)
+        instance.delete()
+        return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
 
 
-# =============================================================================
-# ویو EmployerReportViewSet (مدیریت گزارش‌های کارفرماها)
-# =============================================================================
-class EmployerReportViewSet(viewsets.ModelViewSet):
+class EmployerReportViewSet(viewsets.ViewSet):
     """
     ویوست برای مدیریت گزارش‌های کارفرماها.
     """
-    queryset = EmployerReport.objects.all()
-    serializer_class = EmployerReportSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
+    permission_classes = [IsAuthenticated, IsAdminOrSupporterOrReporter]
+    lookup_field = 'pk'
 
     def list(self, request, *args, **kwargs):
         """
         لیست تمامی گزارش‌ها؛ فقط قابل دسترسی توسط مدیران (admin).
         """
-        if request.user.is_staff:
-            queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        queryset = EmployerReport.objects.all()
+        serializer = EmployerReportSerializer(queryset, many=True)
+        return Response(serializer.data)
 
-    def retrieve(self, request, id=None, *args, **kwargs):
+    def retrieve(self, request, pk, *args, **kwargs):
         """
-        دریافت جزئیات یک گزارش؛ قابل دسترسی توسط مدیران، گزارش‌دهنده، یا کارفرمای گزارش‌شده.
+        دریافت جزئیات یک گزارش؛ قابل دسترسی توسط مدیران، گزارش‌دهنده، یا جوینده کار گزارش‌شده.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter or request.user == report.reported_employer.user:
-            serializer = self.get_serializer(report)
-            return Response(serializer.data)
-        return Response({"error": "شما اجازه مشاهده این محتوا را ندارید"}, status=status.HTTP_403_FORBIDDEN)
 
-    def create(self, request, *args, **kwargs):
+        instance = get_object_or_404(EmployerReport, id=pk)
+        serializer = EmployerReportSerializer(instance)
+        return Response(serializer.data)
+
+    def create(self, request, pk, *args, **kwargs):
+        if pk is None:
+            return Response({"message":"The user id is needed."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_object_or_404(User, id=pk)
+        if user.user_type != "EM":
+            return Response({'error': 'This user is not a jobseeker'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        
+        serializer = EmployerReportSerializer(data=request.data, context={'request': request, 'user_id': user.id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'massage': 'The report created.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk, *args, **kwargs):
         """
-        ایجاد یک گزارش جدید.
+        بروزرسانی یک گزارش موجود؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
         """
-        serializer = self.get_serializer(data=request.data)
+        instance = get_object_or_404(EmployerReport, id=pk)
+        self.check_object_permissions(request, instance)
+        serializer = EmployerReportSerializer(instance, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk, *args, **kwargs):
+        """
+        حذف یک گزارش؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
+        """
+        instance = get_object_or_404(EmployerReport, id=pk)
+        self.check_object_permissions(request, instance)
+        instance.delete()
+        return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class AdvertisementReportViewSet(viewsets.ViewSet):
+    """
+    ویوست برای مدیریت گزارش‌های آگهی‌ها.
+    """
+    permission_classes = [IsAuthenticated, IsAdminOrSupporterOrReporter]
+    lookup_field = 'id'
+
+    def list(self, request, *args, **kwargs):
+        queryset = AdvertisementReport.objects.all()
+        serializer = AdvertisementReportSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk, *args, **kwargs):
+        instance = get_object_or_404(AdvertisementReport, id=pk)
+        serializer = AdvertisementReportSerializer(instance)
+        return Response(serializer.data)
+
+    def create(self, request, pk, *args, **kwargs):
+        if pk is None:
+            return Response({"message":"The ad_id is needed."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        advertisement = get_object_or_404(Advertisement, id=pk)
+        serializer = AdvertisementReportSerializer(data=request.data, context={'request': request, 'ad_id': advertisement.id})
         if serializer.is_valid():
             serializer.save(reporter=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, id=None, *args, **kwargs):
+    
+    def update(self, request, pk, *args, **kwargs):
         """
         بروزرسانی یک گزارش موجود؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            serializer = self.get_serializer(report, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"error": "شما اجازه به‌روزرسانی این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        instance = get_object_or_404(AdvertisementReport, id=pk)
+        self.check_object_permissions(request, instance)
+        serializer = AdvertisementReportSerializer(instance, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
-    def destroy(self, request, id=None, *args, **kwargs):
+    def destroy(self, request, pk, *args, **kwargs):
         """
         حذف یک گزارش؛ فقط توسط مدیران یا گزارش‌دهنده قابل انجام است.
         """
-        report = get_object_or_404(self.get_queryset(), id=id)
-        if request.user.is_staff or request.user == report.reporter:
-            report.delete()
-            return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "شما اجازه حذف این گزارش را ندارید"}, status=status.HTTP_403_FORBIDDEN)
+        instance = get_object_or_404(AdvertisementReport, id=pk)
+        self.check_object_permissions(request, instance)
+        instance.delete()
+        return Response({"message": "گزارش حذف شد"}, status=status.HTTP_204_NO_CONTENT)

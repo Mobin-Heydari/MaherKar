@@ -1,78 +1,54 @@
-from django.shortcuts import get_object_or_404  
-# وارد کردن تابع get_object_or_404 برای واکشی یک شیء از دیتابیس یا پرتاب خطای 404 اگر شیء پیدا نشود
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status, permissions
+from rest_framework.views import Response
 
-from rest_framework import viewsets, status, permissions  
-# ایمپورت ماژول‌های viewsets برای مدیریت ویوست‌ها، status برای کدهای وضعیت HTTP و permissions برای مدیریت سطح دسترسی
-
-from rest_framework.views import Response  
-# ایمپورت کلاس Response برای ارسال پاسخ‌های HTTP
-
-from .models import SubscriptionOrder  
-# ایمپورت مدل SubscriptionOrder از فایل models جهت استفاده در ویو
-
-from .serializers import SubscriptionOrderSerializer  
-# ایمپورت سریالایزر SubscriptionOrderSerializer برای مدیریت داده‌های ورودی و خروجی
-
-from Advertisements.models import Advertisement  
-# ایمپورت مدل Advertisement برای مدیریت آگهی‌های مرتبط با سفارش
-
-from Subscriptions.models import SubscriptionPlan, AdvertisementSubscription  
-# ایمپورت مدل‌های SubscriptionPlan و AdvertisementSubscription برای مدیریت طرح‌ها و اشتراک‌های مرتبط
+from .models import SubscriptionOrder
+from .serializers import SubscriptionOrderSerializer
 
 
 
 
-# =============================================================================
-# ویو SubscriptionOrderViewSet برای مدیریت سفارشات اشتراک
-# =============================================================================
 class SubscriptionOrderViewSet(viewsets.ViewSet):
     """
-    ویوست برای مدیریت عملیات سفارشات اشتراک شامل عملیات لیست، دریافت جزئیات و ایجاد سفارش.
+    ویوست مدیریت سفارشات اشتراک.
+    عملیات‌های لیست، جزئیات سفارش و ایجاد سفارش جدید در اینجا مدیریت می‌شود.
     """
-
-    permission_classes = [permissions.IsAuthenticated]  
-    # تنها کاربران احراز هویت‌شده می‌توانند به این ویوست دسترسی داشته باشند
+    permission_classes = [permissions.IsAuthenticated]  # تنها کاربران احراز هویت شده به این ویو دسترسی دارند
 
     def list(self, request):
         """
-        دریافت لیستی از تمامی سفارشات (یا سفارشات کاربر جاری).
+        لیست تمامی سفارشات؛ اگر کاربر مدیر (admin) باشد، تمام سفارشات نمایش داده می‌شود،
+        در غیر این صورت تنها سفارشات متعلق به کاربر جاری نمایش داده می‌شود.
         """
-        queryset = SubscriptionOrder.objects.all()  # واکشی تمامی سفارشات از دیتابیس
-        if request.user.is_staff:  
-            # اگر کاربر admin باشد، تمامی سفارشات نمایش داده می‌شود
-            serializer = SubscriptionOrderSerializer(queryset, many=True)  
-            return Response(serializer.data, status=status.HTTP_200_OK)  
+        queryset = SubscriptionOrder.objects.all()
+        # بررسی سطح دسترسی کاربر جهت محدود کردن نتایج
+        if request.user.is_staff:
+            serializer = SubscriptionOrderSerializer(queryset, many=True)
         else:
-            # اگر کاربر معمولی باشد، تنها سفارشات متعلق به خودش نمایش داده می‌شود
-            user_order = queryset.filter(owner=request.user)  
-            serializer = SubscriptionOrderSerializer(user_order, many=True)  
-            return Response(serializer.data, status=status.HTTP_200_OK)  
+            user_order = queryset.filter(owner=request.user)
+            serializer = SubscriptionOrderSerializer(user_order, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, order_id):
         """
-        دریافت جزئیات یک سفارش خاص بر اساس order_id.
+        دریافت جزییات یک سفارش بر اساس شناسه 'order_id'.
+        دسترسی فقط برای کاربری که سفارش را ساخته یا مدیر امکان‌پذیر است.
         """
-        instance = get_object_or_404(SubscriptionOrder, id=order_id)  
-        # واکشی سفارش از دیتابیس بر اساس order_id یا ارسال خطای 404 اگر یافت نشود
-        if request.user == instance.owner or request.user.is_staff:  
-            # بررسی اینکه آیا کاربر مالک سفارش یا admin است
-            serializer = SubscriptionOrderSerializer(instance)  
-            return Response(serializer.data, status=status.HTTP_200_OK)  
+        instance = get_object_or_404(SubscriptionOrder, id=order_id)
+        # بررسی دسترسی: کاربر باید مالک سفارش یا مدیر باشد
+        if request.user == instance.owner or request.user.is_staff:
+            serializer = SubscriptionOrderSerializer(instance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            # در صورت نداشتن مجوز دسترسی، ارسال پاسخ خطای دسترسی
             return Response({"Massage": "شما برای دسترسی به این اطلاعات مجوز ندارید."})
 
     def create(self, request):
         """
-        ایجاد یک سفارش جدید.
+        ایجاد یک سفارش جدید با استفاده از داده‌های ارسالی.
+        اعتبارسنجی داده‌ها توسط SubscriptionOrderSerializer انجام می‌شود.
         """
-
-        # ایجاد سریالایزر با داده‌های ورودی و ارسال مقادیر context شامل اطلاعات طرح، آگهی و اشتراک
-        serializer = SubscriptionOrderSerializer(data=request.data)
+        serializer = SubscriptionOrderSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            # اگر داده‌ها معتبر باشند، یک سفارش جدید ایجاد و ذخیره می‌شود
             serializer.save()
-            return Response({"Massage": "سفارش با موفقیت ساخته شد"}, status=status.HTTP_200_OK)  
-        else:
-            # در صورت بروز خطا در داده‌های ورودی، پاسخ خطای 400 ارسال می‌شود
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"Massage": "سفارش با موفقیت ساخته شد"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

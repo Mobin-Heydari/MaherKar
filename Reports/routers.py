@@ -1,63 +1,79 @@
-from django.urls import path, include  
-# ایمپورت توابع path و include برای تعریف مسیرهای URL و اتصال به روترهای سفارشی
-
-from rest_framework.routers import DefaultRouter  
-# ایمپورت کلاس DefaultRouter از DRF برای مدیریت خودکار مسیرهای پایه
-
-from .views import (  
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    ReportCategoryViewSet,
+    EmployerReportViewSet,
     JobSeekerReportViewSet,
-    EmployerReportViewSet
-)  
-# ایمپورت ویوست‌های مرتبط با گزارش‌های جویندگان کار، کارفرماها، و آگهی‌ها
+    AdvertisementReportViewSet
+)
 
 
+class ReportCategoryRouter(DefaultRouter):
 
-
-# ---------------------------------------------------------------------------
-# JobSeekerReportRouter: روتر برای مدیریت URLهای مربوط به JobSeekerReport (گزارش جویندگان کار)
-# ---------------------------------------------------------------------------
-class JobSeekerReportRouter(DefaultRouter):
     def __init__(self):
         super().__init__()
-        # ثبت ویوست JobSeekerReportViewSet در روتر با basename 'jobseeker-report'
+        self.register(r'', ReportCategoryViewSet, basename='report-categories')
+
+    def get_urls(self):
+        custom_urls = [
+            path('', include([
+                path('', ReportCategoryViewSet.as_view({'get': 'list', 'post': 'create'})),
+                path('<int:pk>/', ReportCategoryViewSet.as_view({'get': 'retrieve', 'delete': 'destroy', 'put': 'update'}))
+            ]))
+        ]
+        return custom_urls
+
+
+class JobSeekerReportRouter(DefaultRouter):
+    """روتر برای مدیریت URLهای گزارش‌های جویندگان کار."""
+    def __init__(self):
+        super().__init__()
         self.register(r'', JobSeekerReportViewSet, basename='jobseeker-report')
 
     def get_urls(self):
-        # دریافت URLهای پیش‌فرض از DefaultRouter
-        urls = super().get_urls()
-        # تعریف URLهای سفارشی برای لیست کردن، دریافت جزئیات، ایجاد، بروزرسانی، و حذف گزارش‌ها
         custom_urls = [
             path('', include([
-                # مسیر خالی: لیست کردن (GET) و ایجاد (POST) گزارش‌ها
-                path('', JobSeekerReportViewSet.as_view({'get': 'list', 'post': 'create'})),
-                # مسیر با شناسه id: دریافت جزئیات (GET)، بروزرسانی (PUT)، و حذف (DELETE) یک گزارش خاص
-                path('<int:id>/', JobSeekerReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+                path('', JobSeekerReportViewSet.as_view({'get': 'list'})),
+                path('create/<int:pk>/', JobSeekerReportViewSet.as_view({'post': 'create'})),
+                path('detail/<int:pk>/', JobSeekerReportViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', JobSeekerReportViewSet.as_view({'put': 'update'})),
+                path('delete/<int:pk>/', JobSeekerReportViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
-        # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگرداندن مجموعه نهایی URLها
-        return urls + custom_urls
+        return custom_urls
 
-
-# ---------------------------------------------------------------------------
-# EmployerReportRouter: روتر برای مدیریت URLهای مربوط به EmployerReport (گزارش کارفرماها)
-# ---------------------------------------------------------------------------
 class EmployerReportRouter(DefaultRouter):
+    """روتر برای مدیریت URLهای گزارش‌های کارفرما."""
     def __init__(self):
         super().__init__()
-        # ثبت ویوست EmployerReportViewSet در روتر با basename 'employer-report'
         self.register(r'', EmployerReportViewSet, basename='employer-report')
 
     def get_urls(self):
-        # دریافت URLهای پیش‌فرض از DefaultRouter
-        urls = super().get_urls()
-        # تعریف URLهای سفارشی برای لیست کردن، دریافت جزئیات، ایجاد، بروزرسانی، و حذف گزارش‌ها
         custom_urls = [
             path('', include([
-                # مسیر خالی: لیست کردن (GET) و ایجاد (POST) گزارش‌ها
-                path('', EmployerReportViewSet.as_view({'get': 'list', 'post': 'create'})),
-                # مسیر با شناسه id: دریافت جزئیات (GET)، بروزرسانی (PUT)، و حذف (DELETE) یک گزارش خاص
-                path('<int:id>/', EmployerReportViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+                path('', EmployerReportViewSet.as_view({'get': 'list'})),
+                path('create/<int:pk>/', EmployerReportViewSet.as_view({'post': 'create'})),
+                path('detail/<int:pk>/', EmployerReportViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', EmployerReportViewSet.as_view({'put': 'update'})),
+                path('delete/<int:pk>/', EmployerReportViewSet.as_view({'delete': 'destroy'})),
             ])),
         ]
-        # ترکیب URLهای پیش‌فرض با URLهای سفارشی و بازگرداندن مجموعه نهایی URLها
-        return urls + custom_urls
+        return custom_urls
+
+class AdvertisementReportRouter(DefaultRouter):
+    """روتر برای مدیریت URLهای گزارش‌های آگهی."""
+    def __init__(self):
+        super().__init__()
+        self.register(r'', AdvertisementReportViewSet, basename='advertisement-report')
+
+    def get_urls(self):
+        custom_urls = [
+            path('', include([
+                path('', AdvertisementReportViewSet.as_view({'get': 'list'})),
+                path('create/<uuid:pk>/', AdvertisementReportViewSet.as_view({'post': 'create'})),
+                path('detail/<int:pk>/', AdvertisementReportViewSet.as_view({'get': 'retrieve'})),
+                path('update/<int:pk>/', AdvertisementReportViewSet.as_view({'put': 'update'})),
+                path('delete/<int:pk>/', AdvertisementReportViewSet.as_view({'delete': 'destroy'})),
+            ])),
+        ]
+        return custom_urls

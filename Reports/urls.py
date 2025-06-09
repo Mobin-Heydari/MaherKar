@@ -1,30 +1,26 @@
-from django.urls import path, include  
-# ایمپورت توابع path و include برای تعریف مسیرهای URL و اتصال به روترهای سفارشی
-
+from django.urls import path, include
 from .routers import (
-    JobSeekerReportRouter,
+    ReportCategoryRouter,
     EmployerReportRouter,
-)  
-# ایمپورت روترهای سفارشی مربوط به گزارش‌های جویندگان کار، کارفرماها و آگهی‌ها
+    JobSeekerReportRouter,
+    AdvertisementReportRouter,
+)
 
 
 
-app_name = "Reports"  
-# تعریف فضای نام (namespace) برای اپ گزارش‌ها؛ این نامگذاری از تداخل URLها با اپلیکیشن‌های دیگر جلوگیری می‌کند و امکان فراخوانی دقیق مسیرها را فراهم می‌آورد.
+
+app_name = "Reports"
 
 
-# ایجاد نمونه‌هایی از روترهای سفارشی
+report_category_router = ReportCategoryRouter()
 jobseeker_router = JobSeekerReportRouter()
 employer_router = EmployerReportRouter()
+job_advertisement_router = AdvertisementReportRouter()
 
 
-# تعریف الگوهای URL
 urlpatterns = [
-    # مسیر 'jobseeker/' برای مدیریت گزارش‌های جویندگان کار؛
-    # از طریق jobseeker_router.get_urls() تمامی مسیرهای ثبت‌شده در روتر مربوطه درج می‌شود.
-    path('jobseeker/', include(jobseeker_router.get_urls())),
-
-    # مسیر 'employer/' برای مدیریت گزارش‌های کارفرماها؛
-    # از طریق employer_router.get_urls() تمامی مسیرهای ثبت‌شده در روتر مربوطه درج می‌شود.
-    path('employer/', include(employer_router.get_urls())),
+    path('categories/', include(report_category_router.get_urls())),
+    path('jobseeker-reports/', include(jobseeker_router.get_urls())),
+    path('employer-reports/', include(employer_router.get_urls())),
+    path('advertisement-reports/', include(job_advertisement_router.get_urls())),
 ]
